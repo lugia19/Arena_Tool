@@ -58,7 +58,7 @@ make sense. **Verified** against the unpacked 1.09.1 regulation.
 | Field | Old name | Carla | Notes |
 |---|---|---|---|
 | `nameTextID` | `fmgId` | 310 | TitleCharacters (`NPC名`) entries `n, n+1, n+2, n+3` = AC name, pilot name, AC name, pilot name. **Verified**: 310-313 = "FULL COURSE", "\"Cinder\" Carla", "FULL COURSE", "\"Cinder\" Carla". |
-| `emblemImageID` | `menuDecalId` | 12 | Picks `MENU_Decal_<id:08>` (intro emblem) and `Decal_tmb_<id:08>` (HP bar thumbnail). |
+| `emblemImageID` | `menuDecalId` | 12 | Picks `MENU_Decal_<id:08>` (intro emblem) and `Decal_tmb_<id:08>` (HP bar thumbnail). Must be below 10000 (see Emblem IDs). |
 
 The account ID also drives the talk IDs (below). Arena Maker gives each fight account `16000 + 10 * index` and uses
 the same number for `nameTextID` and `emblemImageID`.
@@ -175,8 +175,21 @@ whose cell crosses the old 2048 px edge showed completely, both next to the HP b
 The target sizes the GFX files declare don't matter: they disagree with each other (2048x2048, 2048x1024, 1024x4096)
 and with the real sheet.
 
-Emblem IDs are shared with the player's decals: the same thumbnails (e.g. 11 and 12, Nosaac's and Carla's) show up
-in the decal selection menu. Custom fights need emblem IDs that don't collide with existing ones.
+### Emblem IDs and the player's decal list
+
+Emblem IDs are shared with the player's decals: the arena emblems (e.g. 11 and 12, Nosaac's and Carla's) are also
+selectable decal images. **Verified in game**:
+
+- The player's preset image list is `PresetEmblemSpec`: one row per image, `PieceID` (u16) = emblem ID,
+  `CategoryID` (u8) = tab (1 = PRESET 2; Carla and Nosaac are rows 1250 and 1270 there). Rows are listed in ID order.
+- An emblem with a thumbnail but no `PresetEmblemSpec` row doesn't appear in the list. Adding a row (e.g. 1271,
+  between stock rows 1270 and 1280) makes it appear in that spot.
+- IDs below 10000 are game images (`Decal_tmb_<id>`). IDs from 10000 up are the player's own saved decals: 10000
+  showed a decal the player had made, 16001 and 65535 showed blank slots, even with a `Decal_tmb_` thumbnail present.
+
+So custom emblem IDs must be below 10000 and avoid the stock ones (151 IDs: mostly 1-3046, plus 9998 and 9999);
+4000-9997 is free. `PresetEmblemSpec.PieceID` is 16-bit, so list entries can't go above 65535 anyway. Arena Maker used
+the account ID (16000 + 10 per fight) as the emblem ID, which falls in the player-decal range.
 
 ### Rank icons
 
@@ -269,5 +282,4 @@ move to whichever fight now has that ID. Custom fights need IDs that stay the sa
 
 ## Open questions
 
-- Whether custom emblem IDs also show up in the player's decal list (probably controlled by a param, not the sheet).
 - Custom BGM.
