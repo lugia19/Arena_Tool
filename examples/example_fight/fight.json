@@ -1,6 +1,7 @@
 {
   "format": 1,
   "name": "Example One",
+  "tab": "CUSTOM ARENA",
   "ac": {"design": "example.design", "name": "Example", "pilot": "One"},
   "arena": {
     "description": "Something something, this is the arena description blurb.",

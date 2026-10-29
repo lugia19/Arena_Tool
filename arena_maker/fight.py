@@ -39,6 +39,7 @@ class Fight:
     intro: List[DialogueLine] = field(default_factory=list)
     outro: List[DialogueLine] = field(default_factory=list)
     add_emblem_to_decals: bool = True
+    tab: str = "CUSTOM ARENA"        # Fights with the same tab name share an arena tab
 
 
 def load_fight(folder: str) -> Fight:
@@ -86,4 +87,5 @@ def load_fight(folder: str) -> Fight:
         intro=lines["intro"],
         outro=lines["outro"],
         add_emblem_to_decals=data.get("addEmblemToDecals", True),
+        tab=data.get("tab", "CUSTOM ARENA"),
     )

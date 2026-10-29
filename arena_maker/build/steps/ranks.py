@@ -33,12 +33,13 @@ def default_rank(rank_number, total):
 
 def apply(ctx, fights):
     icons = {}
-    for position, (fight, ids) in enumerate(fights):
+    for fight, ids in fights:
         if fight.rank_icon:
             with Image.open(fight.rank_icon) as image:
                 icon = image.convert("RGBA").resize(RANK_ICON_SIZE, Image.LANCZOS)
         else:
-            text, color = default_rank(len(fights) - position, len(fights))
+            tab = [other_ids for _, other_ids in fights if other_ids.category == ids.category]  # Ranks count per tab
+            text, color = default_rank(len(tab) - tab.index(ids), len(tab))
             icon = render_rank_icon(fight.rank_text or text, fight.rank_color or color, FONT)
         icons[ids.rank_icon] = icon
 

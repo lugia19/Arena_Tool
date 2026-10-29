@@ -19,6 +19,7 @@ def main():
     build_parser.add_argument("fights", nargs="+")
     build_parser.add_argument("--out", default=DEFAULT_OUT)
     build_parser.add_argument("--game", help="Game folder (default: found through Steam)")
+    build_parser.add_argument("--hide-vanilla", action="store_true", help="Remove the stock arena fights")
     build_parser.add_argument("--launch", action="store_true", help="Start the game with the mod afterwards")
     args = parser.parse_args()
 
@@ -28,7 +29,7 @@ def main():
         raise SystemExit("Couldn't find ARMORED CORE VI through Steam; pass --game")
     fights = [(load_fight(folder), slot) for slot, folder in enumerate(args.fights)]  # M1: slot = position
     started = time.time()
-    profile = build(fights, game_dir, args.out)
+    profile = build(fights, game_dir, args.out, hide_vanilla_arena=args.hide_vanilla)
     print(f"Built in {time.time() - started:.0f}s: {profile}")
     if args.launch:
         launch(tools.ME3, profile)

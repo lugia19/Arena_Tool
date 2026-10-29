@@ -17,8 +17,9 @@ from ..witchy import Witchy
 
 
 class BuildContext:
-    def __init__(self, game_dir: str, work_dir: str, sources: Iterable[str] = ()):
+    def __init__(self, game_dir: str, work_dir: str, sources: Iterable[str] = (), hide_vanilla_arena: bool = False):
         self.game_dir = game_dir
+        self.hide_vanilla_arena = hide_vanilla_arena
         self.work_dir = work_dir
         self.sources = list(sources)  # Other mods' package folders, read before the game
         self.archives = GameArchives(game_dir)

@@ -29,5 +29,8 @@ class ParamXml:
         self.rows.insert(index, new_row)
         return new_row
 
+    def remove_row(self, row_id: int):
+        self.rows.remove(self.row(row_id))
+
     def save(self):
         self.tree.write(self.path, encoding="utf-8", xml_declaration=True)

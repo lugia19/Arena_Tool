@@ -37,8 +37,8 @@ make sense. **Verified** against the unpacked 1.09.1 regulation.
 
 | Field (current) | Old name | Carla | Notes |
 |---|---|---|---|
-| `id` | `ID` | 118 | Stock tabs: 1xx = first tab, 2xx = second (from the guide). Custom fights use 300+. |
-| `category` | `menuCategory` | 0 | The tab. Stock: 0, 10. Tab name = MenuText `258010 + category` (258010 "RECORDS", 258020 "ANALYSIS", 258030 free, **verified**), so 20 makes a third tab. |
+| `id` | `ID` | 118 | Stock tabs: 1xx = first tab, 2xx = second. A tab lists its fights in ID order (**verified**). Custom fights use 300+. |
+| `category` | `menuCategory` | 0 | The tab. Stock: 0, 10. Tab name = MenuText `258010 + category` (258010 "RECORDS", 258020 "ANALYSIS"). See Tabs. |
 | `missionParamID` | `missionParamId` | 9401 | Arena map. |
 | `rankIconID` | `rankTextureId` | 11 | Frame of the rank icon sprite (see Rank icons). |
 | `rankTextID` | - | 258518 | Most likely unused. Stock values follow the tab and position (rows 100-128: 258500-258528, rows 200-211: 258950-258961), but 20 of the 41 IDs exist in no text file (`menu`/`item`, engus and jpnjp), and the rest only overlap `FNR_ダイアログ`'s generic arena sortie dialogs ("Begin the program?", overload warnings) or `%null%` entries (**verified**). Arena Maker copied Carla's value to every custom fight without problems. |
@@ -52,6 +52,19 @@ make sense. **Verified** against the unpacked 1.09.1 regulation.
 | `endCutsceneId` | `outroCutsceneId` | -1 | -1 = none. |
 | `bgmId` | `bgmSoundId` | 50000 | |
 | `rewardTokenID`, `*_osExp`, `*_reserved` | - | 0 | Copied from the template row. |
+
+### Tabs, order and hiding the stock fights
+
+**Verified in game**:
+
+- Every `category` value used by some row becomes a tab, shown in category order; values don't have to be multiples
+  of 10 (21 worked) and at least 6 tabs fit. `category` is an s8.
+- Tab names are MenuText `258010 + category`. 258030-258049 are unused, so categories 20-39 give 20 custom tabs after
+  the stock ones; 40, 50, 90 and 100 would overwrite other arena UI text ("MATCH INFO", "REWARD", "RANK", ...).
+- Within a tab, fights are listed in ArenaParam ID order. Clears are also saved by ArenaParam ID (see Saves), so the
+  list order and the clear tracking can't be separated.
+- ArenaParam has no "enabled" field, but removing the stock rows (categories 0 and 10, keeping the empty row 0)
+  hides the stock tabs; the arena keeps working with only custom tabs.
 
 ### AccountParam: name and emblem
 
@@ -280,7 +293,8 @@ whose body is `int count; int arenaIds[count]`: the IDs of the cleared fights (*
 fight cleared lists exactly 100-128 and 200-211). See `010-templates/Formats/SL2/USER_DATA000.bt` in AC6_tools.
 
 So a custom fight's clear status follows its ArenaParam ID: if fights get renumbered (e.g. by reordering), clears
-move to whichever fight now has that ID. Custom fights need IDs that stay the same between builds.
+move to whichever fight now has that ID. Since a tab is also ordered by ArenaParam ID, Arena Maker numbers fights by
+list position (reordering works, a clear stays with its position) and ties all their other IDs to the fight itself.
 
 ## Open questions
 

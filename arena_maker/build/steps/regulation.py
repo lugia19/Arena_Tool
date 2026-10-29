@@ -1,11 +1,12 @@
 """Params: one cloned set of rows per fight, based on "Cinder" Carla's fight (all her IDs are 11200000/310/118)."""
-from ...ids import PRESET_EMBLEM_CATEGORY, TAB_CATEGORY
+from ...ids import PRESET_EMBLEM_CATEGORY
 
 TEMPLATE_ARENA = 118
 TEMPLATE_ACCOUNT = 310
 TEMPLATE_CHARA = 11200000
 TEMPLATE_TALK = 600310100
 TEMPLATE_PRESET_EMBLEM = 1250
+STOCK_TAB_CATEGORIES = ("0", "10")
 
 
 def apply(ctx, fights):
@@ -14,7 +15,7 @@ def apply(ctx, fights):
     preset_emblems = ctx.param("PresetEmblemSpec")
 
     for fight, ids in fights:
-        arena.clone_row(TEMPLATE_ARENA, ids.arena, paramdexName=f"Custom: {fight.name}", category=TAB_CATEGORY,
+        arena.clone_row(TEMPLATE_ARENA, ids.arena, paramdexName=f"Custom: {fight.name}", category=ids.category,
                         missionParamID=fight.map_id, rankIconID=ids.rank_icon,
                         ranker_accountParamID=ids.account, ranker_chrInitParamID=ids.chara,
                         ranker_npcParamID=ids.chara, ranker_thinkParamID=ids.chara,
@@ -42,3 +43,8 @@ def apply(ctx, fights):
         if fight.emblem and fight.add_emblem_to_decals:
             preset_emblems.clone_row(TEMPLATE_PRESET_EMBLEM, ids.preset_emblem, PieceID=ids.emblem,
                                      CategoryID=PRESET_EMBLEM_CATEGORY)
+
+    if ctx.hide_vanilla_arena:  # ArenaParam has no "enabled" field, so the stock fights go (row 0 is an empty dummy)
+        for row in list(arena.rows):
+            if row.get("id") != "0" and row.get("category", "0") in STOCK_TAB_CATEGORIES:
+                arena.remove_row(int(row.get("id")))
