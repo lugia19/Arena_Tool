@@ -1,14 +1,16 @@
 """The Arena Maker window: the fight library plus building and launching. Run with `python -m arena_maker.gui`."""
 import os
 import sys
+import tempfile
 import traceback
+import urllib.request
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QHBoxLayout, QHeaderView, QMainWindow,
-                             QMessageBox, QPlainTextEdit, QPushButton, QTreeWidget, QTreeWidgetItem, QVBoxLayout,
-                             QWidget)
+                             QMessageBox, QPlainTextEdit, QProgressDialog, QPushButton, QTreeWidget, QTreeWidgetItem,
+                             QVBoxLayout, QWidget)
 
-from . import library, tools
+from . import __version__, library, tools
 from .build import PROFILE_NAME, build
 from .package import launch
 from .steam import find_game_dir
@@ -39,10 +41,52 @@ class BuildWorker(QObject):
             self.finished.emit()
 
 
+class DownloadWorker(QObject):
+    progress = pyqtSignal(int, int)
+    failed = pyqtSignal(str)
+    finished = pyqtSignal()
+
+    def run(self):
+        try:
+            with tempfile.TemporaryDirectory() as temp:
+                zip_path = os.path.join(temp, "tools.zip")
+                with urllib.request.urlopen(tools.TOOLS_URL) as response, open(zip_path, "wb") as f:
+                    total, done = int(response.headers.get("Content-Length", 0)), 0
+                    while chunk := response.read(1 << 20):
+                        f.write(chunk)
+                        done += len(chunk)
+                        self.progress.emit(done, total)
+                tools.install_tools(zip_path)
+        except Exception as error:
+            self.failed.emit(str(error))
+        finally:
+            self.finished.emit()
+
+
+def download_tools():
+    """Downloads and installs tools.zip behind a progress dialog. Returns an error message, or None on success."""
+    dialog = QProgressDialog("Downloading the tools (first run only)...", None, 0, 0)
+    dialog.setWindowTitle("Arena Maker")
+    dialog.setAutoClose(False)  # Reaching 100% would otherwise close it while the zip is still being extracted
+    dialog.setAutoReset(False)
+    errors = []
+    thread, worker = QThread(), DownloadWorker()
+    worker.moveToThread(thread)
+    thread.started.connect(worker.run)
+    worker.progress.connect(lambda done, total: (dialog.setMaximum(total), dialog.setValue(done)))
+    worker.failed.connect(errors.append)
+    worker.finished.connect(thread.quit)
+    thread.finished.connect(dialog.accept)
+    thread.start()
+    dialog.exec()
+    thread.wait()
+    return errors[0] if errors else None
+
+
 class MainWindow(QMainWindow):
     def __init__(self, data_dir: str):
         super().__init__()
-        self.setWindowTitle("Arena Maker")
+        self.setWindowTitle(f"Arena Maker {__version__}")
         self.resize(760, 520)
         self.setAcceptDrops(True)
         self.lib = library.load_library(data_dir)
@@ -220,6 +264,11 @@ def main():
     app = QApplication(sys.argv)
     with open(STYLESHEET, encoding="utf-8") as f:
         app.setStyleSheet(f.read())
+    if not tools.tools_installed():
+        error = download_tools()
+        if error:
+            QMessageBox.critical(None, "Arena Maker", f"Couldn't download the tools:\n\n{error}")
+            sys.exit(1)
     try:
         tools.check_tools()
     except FileNotFoundError as error:

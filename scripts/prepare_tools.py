@@ -1,17 +1,22 @@
-"""Assembles the bundled tools folder (tools/) from local copies of the pinned releases, pre-configured so nothing in
-it gets written at runtime except Oodle (copied from the game on first use, as it can't be redistributed).
+"""Assembles the tools folder (tools/) from local copies of the pinned releases, pre-configured so nothing in it gets
+written at runtime except Oodle (copied from the game on first use, as it can't be redistributed). With --zip it also
+packs it as the tools.zip players download from the repo's releases (bump TOOLS_VERSION in arena_maker/tools.py).
 
-Usage: python scripts/prepare_tools.py [--witchybnd DIR] [--rewwise DIR] [--texconv DIR] [--me3 DIR]
+Usage: python scripts/prepare_tools.py [--zip PATH] [--witchybnd DIR] [--rewwise DIR] [--texconv DIR] [--me3 DIR]
 Defaults point at a local AC6_tools folder.
 """
 import argparse
 import json
 import os
 import shutil
+import sys
 import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TOOLS_DIR = os.path.join(ROOT, "tools")
+sys.path.insert(0, ROOT)
+from arena_maker.tools import TOOLS_DIR, TOOLS_VERSION  # noqa: E402
+
+LICENSES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tool_licenses")
 AC6_TOOLS = r"C:\Users\lugia19\Desktop\Programs\AC6_tools"
 
 # WitchyBND layers its settings as appsettings.json -> %APPDATA%/WitchyBND/appsettings.user.json ->
@@ -60,6 +65,7 @@ def main():
     parser.add_argument("--rewwise", default=os.path.join(AC6_TOOLS, "Audio", "rewwise"))
     parser.add_argument("--texconv", default=os.path.join(AC6_TOOLS, "DirectXTex"))
     parser.add_argument("--me3", default=os.path.join(AC6_TOOLS, "me3"))
+    parser.add_argument("--zip", help="Also write the tools.zip for a release to this path")
     args = parser.parse_args()
 
     shutil.rmtree(TOOLS_DIR, ignore_errors=True)
@@ -69,10 +75,18 @@ def main():
     os.makedirs(os.path.join(TOOLS_DIR, "texconv"))
     shutil.copy2(os.path.join(args.texconv, "texconv.exe"), os.path.join(TOOLS_DIR, "texconv"))
     shutil.copytree(os.path.join(args.me3, "bin"), os.path.join(TOOLS_DIR, "me3", "bin"))
-    for name in os.listdir(args.me3):
-        if name.startswith("LICENSE"):
-            shutil.copy2(os.path.join(args.me3, name), os.path.join(TOOLS_DIR, "me3"))
-    print(f"Tools prepared in {TOOLS_DIR}")
+    shutil.copytree(LICENSES_DIR, os.path.join(TOOLS_DIR, "LICENSES"))
+    with open(os.path.join(TOOLS_DIR, "VERSION"), "w", encoding="utf-8") as f:
+        f.write(TOOLS_VERSION)
+    print(f"Tools {TOOLS_VERSION} prepared in {TOOLS_DIR}")
+
+    if args.zip:
+        with zipfile.ZipFile(args.zip, "w", zipfile.ZIP_DEFLATED) as archive:
+            for folder, _, files in os.walk(TOOLS_DIR):
+                for name in files:
+                    path = os.path.join(folder, name)
+                    archive.write(path, os.path.relpath(path, TOOLS_DIR))
+        print(f"Wrote {args.zip}")
 
 
 if __name__ == "__main__":

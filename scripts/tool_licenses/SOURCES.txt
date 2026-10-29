@@ -1,0 +1,15 @@
+Third-party tools bundled in Arena Maker's tools.zip, unmodified except for the configuration noted below.
+
+WitchyBND 3.0.1.0 (witchybnd/) - GPL-3.0, see WitchyBND-LICENSE.txt
+  Source: https://github.com/ividyon/WitchyBND/tree/3.0.1.0
+  Configuration added by Arena Maker: appsettings.override.json, the Paramdex extracted from Assets/Paramdex.zip,
+  and Assets/Paramdex/AC6/Upgrader/version.txt raised to 1_09_1_0042L.
+
+rewwise bnk2json 0.3.2 (rewwise/) - MIT or Apache-2.0, see rewwise-LICENSE-MIT.txt / rewwise-LICENSE-APACHE.txt
+  Source: https://github.com/vswarte/rewwise/tree/v0.3.2
+
+texconv 2024.6.5.1, DirectXTex June 2024 (texconv/) - MIT, see texconv-LICENSE.txt
+  Source: https://github.com/microsoft/DirectXTex/tree/jun2024
+
+me3 0.13.0 (me3/) - Apache-2.0 or MIT, see me3-LICENSE-APACHE.txt / me3-LICENSE-MIT.txt
+  Source: https://github.com/garyttierney/me3/tree/v0.13.0

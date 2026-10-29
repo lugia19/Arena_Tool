@@ -1,3 +1,7 @@
 
 # Bundled tools, assembled by scripts/prepare_tools.py
 tools/
+
+# Release files (tools.zip, launcher zip)
+dist/
+__pycache__/
