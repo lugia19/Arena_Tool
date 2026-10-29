@@ -19,7 +19,7 @@ replaces the old version, keeping its place in the list.
   "ai": {"logic": "custom_logic.lua"},
   "images": {"emblem": "emblem.png", "thumbnail": "thumbnail.png", "preview": "preview.png", "rankIcon": "rank_icon.png"},
   "rank": {"text": "05/S", "color": "#fff145"},
-  "dialogue": {"speaker": 200,
+  "dialogue": {"speaker": "Arena Announcer",
                "intro": [{"text": "...", "audio": "intro1.wav"}],
                "outro": [{"text": "...", "audio": "outro1.wav"}]},
   "addEmblemToDecals": true
@@ -46,7 +46,7 @@ replaces the old version, keeping its place in the list.
 | `images.preview` | | | Arena preview, scaled to 2048x893. |
 | `images.rankIcon` | | generated | 232x128. Otherwise an icon like "05/S" is drawn from the fight's rank in its tab. |
 | `rank.text`, `rank.color` | | | Override the generated icon's text and color. |
-| `dialogue.speaker` | | 200 | Who the subtitles are attributed to (200 = ALLMIND). |
+| `dialogue.speaker` | | 200 | Who the subtitles are attributed to: a name (a new speaker is added for it), or an existing speaker's ID, i.e. an AccountParam ID like 200 (ALLMIND), 70 (Handler Walter) or 310 (Carla). |
 | `dialogue.intro` / `outro` | | | Up to 3 / 2 lines: `text`, optional `audio` (wav, flac, ogg, mp3). |
 | `addEmblemToDecals` | | true | Also offer the emblem as a decal in the player's decal menu. |
 

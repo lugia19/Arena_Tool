@@ -127,7 +127,8 @@ A fight is a folder with a `fight.json` and the files it uses. Paths in `fight.j
 - **Dialogue**:
   - `dialogue.intro` can have up to 3 lines and `dialogue.outro` up to 2.
   - Each line has `text` and an optional `audio` file (wav, flac, ogg or mp3).
-  - `dialogue.speaker` sets who the subtitles are attributed to. The default is 200, ALLMIND.
+  - `dialogue.speaker` sets who the subtitles are attributed to: any name, like `"Arena Announcer"`, or the number of
+    one of the game's speakers, like 200 for ALLMIND (the default) or 70 for Handler Walter.
 - **Decals**: `addEmblemToDecals` (default `true`) also lets players use the emblem as a decal.
 
 The full field reference, with defaults, is in [docs/fight_format.md](docs/fight_format.md).

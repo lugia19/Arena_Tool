@@ -28,3 +28,5 @@ def apply(ctx, fights):
         for fight, ids in fights:
             for offset, text in enumerate((fight.ac_name, fight.pilot_name, fight.ac_name, fight.pilot_name)):
                 names.set_text(ids.account + offset, text)
+            if isinstance(fight.speaker, str):
+                names.set_text(ids.speaker + 3, fight.speaker)

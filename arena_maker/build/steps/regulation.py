@@ -40,10 +40,11 @@ def apply(ctx, fights):
         elif fight.logic_id is not None:
             think_row.set("logicId", str(fight.logic_id))
 
+        talker = ids.speaker if isinstance(fight.speaker, str) else fight.speaker
         talk_ids = [ids.intro_talk(i) for i in range(len(fight.intro))] + [ids.outro_talk(i) for i in range(len(fight.outro))]
         for talk_id in talk_ids:
             talk.clone_row(TEMPLATE_TALK, talk_id, paramdexName=f"Custom: {fight.name}", msgId=talk_id,
-                           voiceId=talk_id, talkerID=fight.speaker)
+                           voiceId=talk_id, talkerID=talker)
 
         if fight.emblem and fight.add_emblem_to_decals:
             preset_emblems.clone_row(TEMPLATE_PRESET_EMBLEM, ids.preset_emblem, PieceID=ids.emblem,

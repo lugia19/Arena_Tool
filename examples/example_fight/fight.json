@@ -19,7 +19,7 @@
     "rankIcon": "rank_icon.png"
   },
   "dialogue": {
-    "speaker": 200,
+    "speaker": "Arena Announcer",
     "intro": [
       {"text": "Intro 1", "audio": "intro1.wav"},
       {"text": "Intro 2", "audio": "intro2.wav"},

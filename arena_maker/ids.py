@@ -26,6 +26,7 @@ class FightIds:
     preset_emblem: int   # PresetEmblemSpec row
     rank_icon: int       # ArenaParam.rankIconID = frame of the rank icon sprite
     category: int        # ArenaParam.category = the fight's tab
+    speaker: int         # TalkParam.talkerID for a speaker named in fight.json; subtitles show text speaker+3
 
     def intro_talk(self, line: int) -> int:
         return 600000000 + self.account * 1000 + 100 + line
@@ -44,4 +45,5 @@ def fight_ids(slot: int, position: int, category: int) -> FightIds:
         preset_emblem=5000 + slot,
         rank_icon=300 - position,  # Stock ranks use frames 0-31 and 101-113
         category=category,
+        speaker=17000 + 10 * slot,
     )

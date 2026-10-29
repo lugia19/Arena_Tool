@@ -3,7 +3,7 @@ import json
 import os
 import re
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Union
 
 FORMAT_VERSION = 1
 
@@ -37,7 +37,7 @@ class Fight:
     rank_icon: Optional[str] = None
     rank_text: Optional[str] = None
     rank_color: Optional[str] = None
-    speaker: int = 200               # TalkParam.talkerID; 200 = ALLMIND
+    speaker: Union[int, str] = 200   # A TalkParam.talkerID (200 = ALLMIND), or a new speaker's name
     intro: List[DialogueLine] = field(default_factory=list)
     outro: List[DialogueLine] = field(default_factory=list)
     add_emblem_to_decals: bool = True
@@ -64,6 +64,8 @@ def load_fight(folder: str) -> Fight:
              for kind in ("intro", "outro")}
     if data.get("tabColor") is not None and not re.fullmatch(r"#[0-9a-fA-F]{6}", data["tabColor"]):
         raise ValueError(f"{folder}: tabColor must look like #ff9900")
+    if not isinstance(dialogue.get("speaker", 200), (int, str)):
+        raise ValueError(f"{folder}: dialogue.speaker must be a name or a speaker ID")
     if len(lines["intro"]) > 3 or len(lines["outro"]) > 2:
         raise ValueError(f"{folder}: at most 3 intro and 2 outro lines")
 
