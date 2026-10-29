@@ -35,6 +35,16 @@ The list sets each tab's order: the first fight is the lowest rank. Change the o
 
 **Hide vanilla arena** removes the stock arena fights, so only your custom fights are shown.
 
+## Using another mod as the base
+
+To play the custom fights together with another mod, such as a balance mod, use **Choose…** next to "Base mod" and
+pick that mod's folder. Pick the folder that mirrors the game's files, the one with `regulation.bin`, `msg`, and so on.
+
+- The fights are then built on top of that mod's files, so its changes to the regulation and text are kept.
+- Arena Maker's launch also loads the base mod, so its other files still apply.
+- Don't load the base mod separately as well. **Build && launch** already includes it.
+- **Clear** goes back to the stock game.
+
 ## Playing
 
 - **Build && launch** builds the mod and starts the game.
@@ -128,8 +138,8 @@ copy and keeps its place in the list.
 
 Run from source with Python 3.11 and `pip install -r requirements.txt`:
 - `python main.py` opens the window.
-- `python -m arena_maker --help` gives the command-line interface (list, add, remove, move, hide-vanilla, build,
-  launch).
+- `python -m arena_maker --help` gives the command-line interface (list, add, remove, move, hide-vanilla, base-mod,
+  build, launch).
 
 The tools are downloaded into `tools/` on the first start of the window.
 - To assemble them yourself from local copies of the pinned versions, run `python scripts/prepare_tools.py`.

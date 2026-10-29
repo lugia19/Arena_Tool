@@ -8,7 +8,7 @@ import urllib.request
 
 import certifi
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
-from PyQt6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QHBoxLayout, QHeaderView, QMainWindow,
+from PyQt6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QHBoxLayout, QHeaderView, QLabel, QMainWindow,
                              QMessageBox, QPlainTextEdit, QProgressDialog, QPushButton, QTreeWidget, QTreeWidgetItem,
                              QVBoxLayout, QWidget)
 
@@ -25,14 +25,14 @@ class BuildWorker(QObject):
     failed = pyqtSignal(str)
     finished = pyqtSignal()
 
-    def __init__(self, fights, game_dir, data_dir, hide_vanilla, launch_after):
+    def __init__(self, fights, game_dir, data_dir, base_mod, hide_vanilla, launch_after):
         super().__init__()
-        self.args = (fights, game_dir, data_dir, hide_vanilla, launch_after)
+        self.args = (fights, game_dir, data_dir, base_mod, hide_vanilla, launch_after)
 
     def run(self):
-        fights, game_dir, data_dir, hide_vanilla, launch_after = self.args
+        fights, game_dir, data_dir, base_mod, hide_vanilla, launch_after = self.args
         try:
-            build(fights, game_dir, data_dir, hide_vanilla_arena=hide_vanilla, log=self.log.emit)
+            build(fights, game_dir, data_dir, base_mod, hide_vanilla_arena=hide_vanilla, log=self.log.emit)
             self.log.emit("Build finished.")
             if launch_after:
                 launch(tools.ME3, os.path.join(data_dir, PROFILE_NAME))
@@ -106,6 +106,7 @@ class MainWindow(QMainWindow):
             header.setSectionResizeMode(column, mode)
         self.hide_vanilla = QCheckBox("Hide vanilla arena")
         self.hide_vanilla.toggled.connect(self.set_hide_vanilla)
+        self.base_mod = QLabel()
         self.log = QPlainTextEdit()  # Hidden until asked for; the status bar always shows the latest line
         self.log.setReadOnly(True)
         self.log.setVisible(False)
@@ -122,8 +123,9 @@ class MainWindow(QMainWindow):
                         button("Add folder…", self.add_folder), button("Add zip…", self.add_zip),
                         button("Remove", self.remove_selected), button("Open data folder", self.open_data_folder),
                         button("Build", lambda: self.start_build(False)),
-                        button("Build && launch", lambda: self.start_build(True))]
-        up, down, add_folder, add_zip, remove, open_folder, build_button, build_launch = self.buttons
+                        button("Build && launch", lambda: self.start_build(True)),
+                        button("Choose…", self.choose_base_mod), button("Clear", lambda: self.set_base_mod(None))]
+        up, down, add_folder, add_zip, remove, open_folder, build_button, build_launch, choose_base, clear_base =             self.buttons
 
         arrows = QVBoxLayout()
         arrows.addWidget(up)
@@ -137,6 +139,11 @@ class MainWindow(QMainWindow):
             edit_row.addWidget(widget)
         edit_row.addStretch()
         edit_row.addWidget(self.hide_vanilla)
+        base_row = QHBoxLayout()
+        base_row.addWidget(self.base_mod)
+        base_row.addStretch()
+        base_row.addWidget(choose_base)
+        base_row.addWidget(clear_base)
         build_row = QHBoxLayout()
         build_row.addWidget(open_folder)
         build_row.addWidget(self.log_toggle)
@@ -144,7 +151,7 @@ class MainWindow(QMainWindow):
         build_row.addWidget(build_button)
         build_row.addWidget(build_launch)
         layout = QVBoxLayout()
-        for row in (top, edit_row, build_row):
+        for row in (top, edit_row, base_row, build_row):
             layout.addLayout(row)
         layout.addWidget(self.log)
         central = QWidget()
@@ -170,6 +177,7 @@ class MainWindow(QMainWindow):
         self.hide_vanilla.blockSignals(True)
         self.hide_vanilla.setChecked(self.lib.hide_vanilla)
         self.hide_vanilla.blockSignals(False)
+        self.base_mod.setText(f"Base mod: {self.lib.base_mod or 'none (stock game)'}")
 
     def selected(self):
         item = self.fights.currentItem()
@@ -213,6 +221,17 @@ class MainWindow(QMainWindow):
         self.lib.hide_vanilla = checked
         library.save_library(self.lib)
 
+    def choose_base_mod(self):
+        folder = QFileDialog.getExistingDirectory(self, "Select the base mod's folder (the one with regulation.bin, "
+                                                        "msg, etc.)")
+        if folder:
+            self.set_base_mod(os.path.normpath(folder))
+
+    def set_base_mod(self, folder):
+        self.lib.base_mod = folder
+        library.save_library(self.lib)
+        self.refresh(self.selected())
+
     def open_data_folder(self):
         os.makedirs(self.lib.data_dir, exist_ok=True)
         os.startfile(self.lib.data_dir)
@@ -248,7 +267,8 @@ class MainWindow(QMainWindow):
             widget.setEnabled(False)
         self.write_log("Building...")
         self.thread = QThread()
-        self.worker = BuildWorker(fights, game_dir, self.lib.data_dir, self.lib.hide_vanilla, launch_after)
+        self.worker = BuildWorker(fights, game_dir, self.lib.data_dir, self.lib.base_mod, self.lib.hide_vanilla,
+                                  launch_after)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
         self.worker.log.connect(self.write_log)

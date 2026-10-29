@@ -16,6 +16,7 @@ def print_list(lib):
     for number, (fight, slot) in enumerate(library.library_fights(lib), 1):
         print(f"{number:3}. [{fight.tab}] {fight.name} by {fight.author}  (slot {slot})")
     print(f"Vanilla arena: {'hidden' if lib.hide_vanilla else 'shown'}")
+    print(f"Base mod: {lib.base_mod or 'none'}")
 
 
 def main():
@@ -32,6 +33,8 @@ def main():
     move.add_argument("position", type=int)
     hide = commands.add_parser("hide-vanilla", help="Hide or show the stock arena fights")
     hide.add_argument("state", choices=["on", "off"])
+    base = commands.add_parser("base-mod", help="Build on top of another mod's package folder ('none' to stop)")
+    base.add_argument("folder")
     build_parser = commands.add_parser("build", help="Build the mod from the library")
     build_parser.add_argument("--game", help="Game folder (default: found through Steam)")
     build_parser.add_argument("--launch", action="store_true", help="Start the game with the mod afterwards")
@@ -50,6 +53,9 @@ def main():
     elif args.command == "hide-vanilla":
         lib.hide_vanilla = args.state == "on"
         library.save_library(lib)
+    elif args.command == "base-mod":
+        lib.base_mod = None if args.folder.lower() == "none" else os.path.abspath(args.folder)
+        library.save_library(lib)
     elif args.command in ("build", "launch"):
         tools.check_tools()
         if args.command == "build":
@@ -59,7 +65,7 @@ def main():
             if not game_dir:
                 raise SystemExit("Couldn't find ARMORED CORE VI through Steam; pass --game")
             started = time.time()
-            build(library.library_fights(lib), game_dir, args.data, hide_vanilla_arena=lib.hide_vanilla,
+            build(library.library_fights(lib), game_dir, args.data, lib.base_mod, hide_vanilla_arena=lib.hide_vanilla,
                   log=functools.partial(print, flush=True))  # Flushed, so progress shows when piped too
             print(f"Built in {time.time() - started:.0f}s")
         if args.command == "launch" or args.launch:

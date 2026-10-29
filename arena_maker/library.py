@@ -33,6 +33,7 @@ class Library:
     hide_vanilla: bool = False
     entries: List[Entry] = field(default_factory=list)  # In arena order
     game_dir: Optional[str] = None  # Only set when Steam detection didn't find the game
+    base_mod: Optional[str] = None  # Another mod's package folder to build on top of
 
     def folder(self, entry: Entry) -> str:
         return os.path.join(self.data_dir, LIBRARY_DIR, str(entry.slot))
@@ -45,12 +46,12 @@ def load_library(data_dir: str) -> Library:
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
     return Library(data_dir, data["nextSlot"], data["hideVanilla"], [Entry(**entry) for entry in data["fights"]],
-                   data.get("gameDir"))
+                   data.get("gameDir"), data.get("baseMod"))
 
 
 def save_library(library: Library):
     data = {"nextSlot": library.next_slot, "hideVanilla": library.hide_vanilla, "gameDir": library.game_dir,
-            "fights": [vars(entry) for entry in library.entries]}
+            "baseMod": library.base_mod, "fights": [vars(entry) for entry in library.entries]}
     os.makedirs(library.data_dir, exist_ok=True)
     with open(os.path.join(library.data_dir, LIBRARY_FILE), "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
