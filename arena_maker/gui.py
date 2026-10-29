@@ -58,8 +58,12 @@ class MainWindow(QMainWindow):
             header.setSectionResizeMode(column, mode)
         self.hide_vanilla = QCheckBox("Hide vanilla arena")
         self.hide_vanilla.toggled.connect(self.set_hide_vanilla)
-        self.log = QPlainTextEdit()
+        self.log = QPlainTextEdit()  # Hidden until asked for; the status bar always shows the latest line
         self.log.setReadOnly(True)
+        self.log.setVisible(False)
+        self.log_toggle = QPushButton("Show log")
+        self.log_toggle.setCheckable(True)
+        self.log_toggle.toggled.connect(self.toggle_log)
 
         def button(text, slot):
             widget = QPushButton(text)
@@ -87,6 +91,7 @@ class MainWindow(QMainWindow):
         edit_row.addWidget(self.hide_vanilla)
         build_row = QHBoxLayout()
         build_row.addWidget(open_folder)
+        build_row.addWidget(self.log_toggle)
         build_row.addStretch()
         build_row.addWidget(build_button)
         build_row.addWidget(build_launch)
@@ -98,6 +103,14 @@ class MainWindow(QMainWindow):
         central.setLayout(layout)
         self.setCentralWidget(central)
         self.refresh()
+
+    def write_log(self, text: str):
+        self.log.appendPlainText(text)
+        self.statusBar().showMessage(text)
+
+    def toggle_log(self, shown: bool):
+        self.log.setVisible(shown)
+        self.log_toggle.setText("Hide log" if shown else "Show log")
 
     # region Library
     def refresh(self, select: int = None):
@@ -118,7 +131,7 @@ class MainWindow(QMainWindow):
         for path in paths:
             try:
                 for message in library.import_source(self.lib, path):
-                    self.log.appendPlainText(message)
+                    self.write_log(message)
             except Exception as error:
                 QMessageBox.critical(self, "Couldn't add fight", f"{path}\n\n{error}")
         self.refresh()
@@ -185,12 +198,12 @@ class MainWindow(QMainWindow):
 
         for widget in self.buttons:
             widget.setEnabled(False)
-        self.log.appendPlainText("Building...")
+        self.write_log("Building...")
         self.thread = QThread()
         self.worker = BuildWorker(fights, game_dir, self.lib.data_dir, self.lib.hide_vanilla, launch_after)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
-        self.worker.log.connect(self.log.appendPlainText)
+        self.worker.log.connect(self.write_log)
         self.worker.failed.connect(lambda details: QMessageBox.critical(self, "Build failed", details))
         self.worker.finished.connect(self.thread.quit)
         self.thread.finished.connect(self.build_finished)
