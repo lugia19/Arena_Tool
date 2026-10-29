@@ -1,10 +1,12 @@
 """The Arena Maker window: the fight library plus building and launching. Run with `python -m arena_maker.gui`."""
 import os
+import ssl
 import sys
 import tempfile
 import traceback
 import urllib.request
 
+import certifi
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QHBoxLayout, QHeaderView, QMainWindow,
                              QMessageBox, QPlainTextEdit, QProgressDialog, QPushButton, QTreeWidget, QTreeWidgetItem,
@@ -50,7 +52,9 @@ class DownloadWorker(QObject):
         try:
             with tempfile.TemporaryDirectory() as temp:
                 zip_path = os.path.join(temp, "tools.zip")
-                with urllib.request.urlopen(tools.TOOLS_URL) as response, open(zip_path, "wb") as f:
+                # Python only sees root certificates Windows has already fetched, which may not include GitHub's
+                context = ssl.create_default_context(cafile=certifi.where())
+                with urllib.request.urlopen(tools.TOOLS_URL, context=context) as response, open(zip_path, "wb") as f:
                     total, done = int(response.headers.get("Content-Length", 0)), 0
                     while chunk := response.read(1 << 20):
                         f.write(chunk)
