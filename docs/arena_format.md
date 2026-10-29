@@ -41,7 +41,7 @@ make sense. **Verified** against the unpacked 1.09.1 regulation.
 | `category` | `menuCategory` | 0 | The tab. Stock: 0, 10. Tab name = MenuText `258010 + category` (258010 "RECORDS", 258020 "ANALYSIS", 258030 free, **verified**), so 20 makes a third tab. |
 | `missionParamID` | `missionParamId` | 9401 | Arena map. |
 | `rankIconID` | `rankTextureId` | 11 | Frame of the rank icon sprite (see Rank icons). |
-| `rankTextID` | - | 258518 | Unknown; not a MenuText entry. Copied from the template row. |
+| `rankTextID` | - | 258518 | Most likely unused. Stock values follow the tab and position (rows 100-128: 258500-258528, rows 200-211: 258950-258961), but 20 of the 41 IDs exist in no text file (`menu`/`item`, engus and jpnjp), and the rest only overlap `FNR_ダイアログ`'s generic arena sortie dialogs ("Begin the program?", overload warnings) or `%null%` entries (**verified**). Arena Maker copied Carla's value to every custom fight without problems. |
 | `ranker_accountParamID` | `accountParamId` | 310 | |
 | `ranker_chrInitParamID` | `charaInitParamId` | 11200000 | |
 | `ranker_npcParamID` | `npcParamId` | 11200000 | |
@@ -163,7 +163,13 @@ layout binder. Subtexture names end in `.png`; GFX files and the game refer to t
 
 128x128 subtexture `Decal_tmb_<emblemImageID:08>.png` (with `half="0"`, like the stock entries). The stock sheet is
 2048x2048 with 160 thumbnails on a 15x15 grid, 65 cells free. Arena Maker added custom thumbnails to this sheet.
-Open question: whether the game also finds `Decal_tmb_*` in a separate atlas, as it does for rank icons.
+
+Unlike rank icons, the menus don't reference single thumbnails: seven GFX files (`01_000_fe`, `01_texteffect_hi`,
+`02_acarena_preparing`, `02_acarena_select`, `02_decal_deleteimageselect`, `02_marking_imageselect`,
+`02_npcarenaresult`) define the whole `SB_DecalThumbnails` sheet as one external image with a target size of
+2048x2048 (**verified**). So custom thumbnails have to go into that sheet; a separate atlas won't be found. The 65 free
+cells are safe. Growing the sheet beyond 2048x2048 most likely also needs the target size in those GFX files raised
+(untested).
 
 ### Rank icons
 
@@ -245,9 +251,16 @@ BHD5 layout with 64-bit path hashes (`hash = hash * 0x85 + char` over the lowerc
 in `sd.bdt` are hashed relative to `sd/`. `regulation.bin` is a loose file. `sd/sd.bdt` and `sd/sd.bhd` are also
 loose files in the game folder: don't delete them when cleaning up an unpack.
 
+## Saves
+
+Arena progress is stored per ArenaParam ID. In the decrypted save, `USER_DATA000` has an `NpcArena` chunk (version 0)
+whose body is `int count; int arenaIds[count]`: the IDs of the cleared fights (**verified**: a save with every stock
+fight cleared lists exactly 100-128 and 200-211). See `010-templates/Formats/SL2/USER_DATA000.bt` in AC6_tools.
+
+So a custom fight's clear status follows its ArenaParam ID: if fights get renumbered (e.g. by reordering), clears
+move to whichever fight now has that ID. Custom fights need IDs that stay the same between builds.
+
 ## Open questions
 
-- `ArenaParam.rankTextID`: what it points at.
-- Custom `Decal_tmb_*` thumbnails in their own atlas instead of the stock sheet.
-- Whether arena progress is saved per ArenaParam ID (which would make reordering fights reset or move clears).
+- Growing `SB_DecalThumbnails` past 2048x2048 for more than 65 custom thumbnails.
 - Custom BGM.
