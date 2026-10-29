@@ -11,7 +11,7 @@ import zipfile
 
 TOOLS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools")
 TOOLS_VERSION = "1"
-TOOLS_URL = "https://github.com/lugia19/Arena_Maker/releases/download/tools-1/tools.zip"
+TOOLS_URL = "https://github.com/lugia19/Arena_Tool/releases/download/tools-1/tools.zip"
 TOOLS_SHA256 = "b27f5c9bfec19732bc10e40f75a19c772cba6333ab599857f7b831897c78b38c"
 
 WITCHYBND = os.path.join(TOOLS_DIR, "witchybnd", "WitchyBND.exe")
@@ -42,5 +42,5 @@ def install_tools(zip_path: str):
 def check_tools():
     missing = [path for path in (WITCHYBND, BNK2JSON, TEXCONV, ME3) if not os.path.exists(path)]
     if missing:
-        raise FileNotFoundError("Missing tools (start the Arena Maker window once to download them, or run "
+        raise FileNotFoundError("Missing tools (start the ArenaTool window once to download them, or run "
                                 "scripts/prepare_tools.py):\n  " + "\n  ".join(missing))

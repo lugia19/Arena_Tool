@@ -14,7 +14,8 @@ from typing import List, Optional, Tuple
 
 from .fight import Fight, load_fight
 
-DEFAULT_DATA_DIR = os.path.join(os.environ["APPDATA"], "lugia19", "ac6_arena_maker")
+DEFAULT_DATA_DIR = os.path.join(os.environ["APPDATA"], "lugia19", "ac6_arena_tool")
+OLD_DATA_DIR = os.path.join(os.environ["APPDATA"], "lugia19", "ac6_arena_maker")  # Before the rename (2.1.0)
 LIBRARY_FILE = "library.json"
 LIBRARY_DIR = "library"
 
@@ -37,6 +38,12 @@ class Library:
 
     def folder(self, entry: Entry) -> str:
         return os.path.join(self.data_dir, LIBRARY_DIR, str(entry.slot))
+
+
+def migrate_data_dir():
+    """Moves the library from the folder used before the rename to ArenaTool, once."""
+    if os.path.isdir(OLD_DATA_DIR) and not os.path.exists(DEFAULT_DATA_DIR):
+        os.rename(OLD_DATA_DIR, DEFAULT_DATA_DIR)
 
 
 def load_library(data_dir: str) -> Library:

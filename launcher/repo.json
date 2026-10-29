@@ -1,6 +1,6 @@
 {
-  "repo_url": "https://github.com/lugia19/Arena_Maker.git",
-  "repo_dir": "Arena_Maker",
+  "repo_url": "https://github.com/lugia19/Arena_Tool.git",
+  "repo_dir": "Arena_Tool",
   "startup_script": "main.py",
   "use_pythonw": true,
   "venv_folder": "venv",

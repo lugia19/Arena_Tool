@@ -1,6 +1,6 @@
 # Third-party software
 
-Arena Maker itself is GPL-3.0 (see [LICENSE](LICENSE)).
+ArenaTool itself is GPL-3.0 (see [LICENSE](LICENSE)).
 
 ## Tools (tools.zip)
 
@@ -14,7 +14,7 @@ the configuration noted; the zip's `LICENSES` folder holds the license texts and
 | texconv (DirectXTex) | 2024.6.5.1 (June 2024) | MIT | https://github.com/microsoft/DirectXTex/tree/jun2024 |
 | me3 | 0.13.0 | Apache-2.0 or MIT | https://github.com/garyttierney/me3/tree/v0.13.0 |
 
-WitchyBND configuration added by Arena Maker: `appsettings.override.json`, the Paramdex extracted from
+WitchyBND configuration added by ArenaTool: `appsettings.override.json`, the Paramdex extracted from
 `Assets/Paramdex.zip`, and `Assets/Paramdex/AC6/Upgrader/version.txt` raised to `1_09_1_0042L`. Oodle
 (`oo2core_*.dll`) is not distributed; it is copied from the game folder.
 

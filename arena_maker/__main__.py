@@ -41,6 +41,7 @@ def main():
     build_parser.add_argument("--launch", action="store_true", help="Start the game with the mod afterwards")
     commands.add_parser("launch", help="Start the game with the last build")
     args = parser.parse_args()
+    library.migrate_data_dir()
 
     lib = library.load_library(args.data)
     if args.command == "add":
@@ -63,7 +64,7 @@ def main():
                 raise SystemExit("Couldn't find ARMORED CORE VI through Steam")
             overlaps = find_overlaps(game_dir, folder)
             if overlaps:
-                print("This mod changes things Arena Maker also edits or relies on, so custom fights may not work as "
+                print("This mod changes things ArenaTool also edits or relies on, so custom fights may not work as "
                       "their authors intended:\n  " + "\n  ".join(overlaps))
                 if input("Use it as the base mod anyway? [y/N] ").strip().lower() != "y":
                     return

@@ -2,7 +2,7 @@
 
 Reference for adding custom fights to the ARMORED CORE VI arena: which files, params and IDs are involved and how
 they point at each other. It collects the research behind the original Arena Guide (`lugia19/AC6_Arena_Guide`) and
-Arena Maker, updated for game version 1.09.1 / regulation `10910042` and the tools pinned by `arena_maker/`.
+ArenaTool, updated for game version 1.09.1 / regulation `10910042` and the tools pinned by `arena_maker/`.
 
 Notes are marked **verified** when they were checked against game files or in game while writing the rewrite
 (2026-10), and **from the guide** when they come from the original research and weren't re-checked.
@@ -30,7 +30,7 @@ TalkParam 6xx/7xx IDs from the account ID = intro/outro lines (text in TalkMsg, 
 ## Params (`regulation.bin`)
 
 Field names are the ones in the Paramdex that WitchyBND 3.0.1 ships (AC6 defs last updated for 1.07, still matching
-1.09.1). The original guide and Arena Maker used older names; those are listed so old notes and fight files still
+1.09.1). The original guide and ArenaTool used older names; those are listed so old notes and fight files still
 make sense. **Verified** against the unpacked 1.09.1 regulation.
 
 ### ArenaParam: one row per fight
@@ -41,7 +41,7 @@ make sense. **Verified** against the unpacked 1.09.1 regulation.
 | `category` | `menuCategory` | 0 | The tab. Stock: 0, 10. Tab name = MenuText `258010 + category` (258010 "RECORDS", 258020 "ANALYSIS"). See Tabs. |
 | `missionParamID` | `missionParamId` | 9401 | Arena map. |
 | `rankIconID` | `rankTextureId` | 11 | Frame of the rank icon sprite (see Rank icons). |
-| `rankTextID` | - | 258518 | Most likely unused. Stock values follow the tab and position (rows 100-128: 258500-258528, rows 200-211: 258950-258961), but 20 of the 41 IDs exist in no text file (`menu`/`item`, engus and jpnjp), and the rest only overlap `FNR_ダイアログ`'s generic arena sortie dialogs ("Begin the program?", overload warnings) or `%null%` entries (**verified**). Arena Maker copied Carla's value to every custom fight without problems. |
+| `rankTextID` | - | 258518 | Most likely unused. Stock values follow the tab and position (rows 100-128: 258500-258528, rows 200-211: 258950-258961), but 20 of the 41 IDs exist in no text file (`menu`/`item`, engus and jpnjp), and the rest only overlap `FNR_ダイアログ`'s generic arena sortie dialogs ("Begin the program?", overload warnings) or `%null%` entries (**verified**). ArenaTool copied Carla's value to every custom fight without problems. |
 | `ranker_accountParamID` | `accountParamId` | 310 | |
 | `ranker_chrInitParamID` | `charaInitParamId` | 11200000 | |
 | `ranker_npcParamID` | `npcParamId` | 11200000 | |
@@ -73,7 +73,7 @@ make sense. **Verified** against the unpacked 1.09.1 regulation.
 | `nameTextID` | `fmgId` | 310 | TitleCharacters (`NPC名`) entries `n, n+1, n+2, n+3` = AC name, pilot name, AC name, pilot name. **Verified**: 310-313 = "FULL COURSE", "\"Cinder\" Carla", "FULL COURSE", "\"Cinder\" Carla". |
 | `emblemImageID` | `menuDecalId` | 12 | Picks `MENU_Decal_<id:08>` (intro emblem) and `Decal_tmb_<id:08>` (HP bar thumbnail). Below 10000 if it should also be a player decal (see Emblem IDs). |
 
-The account ID also drives the talk IDs (below). Arena Maker gives each fight account `16000 + 10 * index` and uses
+The account ID also drives the talk IDs (below). ArenaTool gives each fight account `16000 + 10 * index` and uses
 the same number for `nameTextID` and `emblemImageID`.
 
 ### CharaInitParam, NpcParam, NpcThinkParam
@@ -84,7 +84,7 @@ the same number for `nameTextID` and `emblemImageID`.
 | NpcParam | `nameId` | `accountParamId` | 310 | Points at the AccountParam (from the guide; Carla's value matches her account). Sets the in-fight name. |
 | NpcThinkParam | `logicId` | `logicId` | 11200000 | The AI script. |
 
-Everything else is copied from a template fight. Arena Maker uses Carla's rows (`11200000` everywhere) as the
+Everything else is copied from a template fight. ArenaTool uses Carla's rows (`11200000` everywhere) as the
 template because all her IDs are the same number.
 
 ### TalkParam: intro and outro lines
@@ -114,7 +114,7 @@ FMG files inside the msgbnds, by their Japanese names (as unpacked by WitchyBND)
 | AC and pilot names | `item.msgbnd.dcx` | `NPC名` (TitleCharacters) | `nameTextID` .. `+3` |
 
 Languages (`msg/<x>/`): araae, common, deude, engus, frafr, itait, jp, jpnjp, korkr, polpl, porbr, rusru, spaar,
-spaes, thath, zhocn, zhotw. Arena Maker only ever edited `engus`; anyone playing in another language sees missing
+spaes, thath, zhocn, zhotw. ArenaTool only ever edited `engus`; anyone playing in another language sees missing
 text for custom fights unless the entries are copied into their language too.
 
 ## AC builds (`param/asmparam/asmparam.designbnd.dcx`)
@@ -125,7 +125,7 @@ changing `DataName`/`AcName` inside the design is optional.
 
 ## AI (`script/<logicId>_logic.luabnd.dcx`)
 
-A BND4 with two files. Arena Maker builds it from scratch; the layout below is **verified** against the stock
+A BND4 with two files. ArenaTool builds it from scratch; the layout below is **verified** against the stock
 `11200000_logic.luabnd.dcx`:
 
 | ID | File | Content |
@@ -141,7 +141,7 @@ Stock logic files are compiled Lua 5.0 bytecode (header `1B 4C 75 61 50`: ESC "L
 DSLuaDecompiler (ElaDiDu's fork names more variables) turns them back into source. `Research/EZOP Research/AC6_EZOP_writeup.md` documents how the AC AI picks
 actions.
 
-`script/aicommon.luabnd.dcx` holds the shared AI code. Arena Maker shipped a copy whose `EZOP_SystemFunc.lua` was
+`script/aicommon.luabnd.dcx` holds the shared AI code. ArenaTool shipped a copy whose `EZOP_SystemFunc.lua` was
 replaced with decompiled source plus a `Log()` helper (writes to `debug-logs/`, off by default) that custom scripts
 may call. The game's Lua has `io` and `os` available; that's how the logger works.
 
@@ -156,7 +156,7 @@ A split binder (BXF4) of one-texture TPFs. **Verified** stock formats:
 | `MENU_Decal_<emblemImageID:08>.tpf.dcx` | AccountParam `emblemImageID` | 1024x1024, BC7_UNORM, 1 mip |
 | `MENU_Archetype_<CharaInitParam ID>.tpf.dcx` | CharaInitParam row ID | 2048x1024, BC7_UNORM, 1 mip |
 
-Arena Maker scales preview images to 2048x893 and pads them to 1024 high. Each TPF holds one `<name>.dds`, TPF
+ArenaTool scales preview images to 2048x893 and pads them to 1024 high. Each TPF holds one `<name>.dds`, TPF
 format code 102 (BC7), DCX_KRAK. New TPFs are added to the binder by listing them in `_witchy-bxf4.xml`; WitchyBND
 rebuilds the `.tpfbhd` itself.
 
@@ -175,7 +175,7 @@ layout binder. Subtexture names end in `.png`; GFX files and the game refer to t
 ### HP bar thumbnail (`SB_DecalThumbnails`)
 
 128x128 subtexture `Decal_tmb_<emblemImageID:08>.png` (with `half="0"`, like the stock entries). The stock sheet is
-2048x2048 with 160 thumbnails on a 15x15 grid, 65 cells free. Arena Maker added custom thumbnails to this sheet.
+2048x2048 with 160 thumbnails on a 15x15 grid, 65 cells free. ArenaTool added custom thumbnails to this sheet.
 
 Unlike rank icons, the menus don't reference single thumbnails: seven GFX files (`01_000_fe`, `01_texteffect_hi`,
 `02_acarena_preparing`, `02_acarena_select`, `02_decal_deleteimageselect`, `02_marking_imageselect`,
@@ -200,7 +200,7 @@ selectable decal images. **Verified in game**:
 - IDs below 10000 are game images (`Decal_tmb_<id>`). IDs from 10000 up are the player's own saved decals: 10000
   showed a decal the player had made, 16001 and 65535 showed blank slots, even with a `Decal_tmb_` thumbnail present.
 
-The arena itself (intro emblem, HP bar thumbnail) looks emblems up by name whatever the ID: Arena Maker used the
+The arena itself (intro emblem, HP bar thumbnail) looks emblems up by name whatever the ID: ArenaTool used the
 account ID (16000 + 10 per fight) as the emblem ID and those showed fine (from the original tool). The 10000 limit
 only matters for the player's decal list. Custom emblems that should be selectable by the player need IDs below 10000
 that avoid the stock ones (151 IDs: mostly 1-3046, plus 9998 and 9999); 4000-9997 is free. `PresetEmblemSpec.PieceID`
@@ -222,7 +222,7 @@ is 16-bit, so list entries can't go above 65535 anyway.
 - Stock frames used: 0-31 and 101-113; frame 113 shows `ArenaRank_00000d`, the blank icon, so higher ranks show
   nothing. After the last custom rank, put `ArenaRank_00000d` back the same way.
 
-Arena Maker numbers custom ranks from 300 downward and puts them in their own atlas, `SB_CustomArenaRank`
+ArenaTool numbers custom ranks from 300 downward and puts them in their own atlas, `SB_CustomArenaRank`
 (subtextures `CustomArenaRank_<rank:05>.png`), added to the same TPF and layout binder. This works in game (from the
 original tool). `arena_maker/gfx.py` writes the sprite changes without JPEXS.
 
@@ -236,7 +236,7 @@ Event "Play_v<talkId>" ─► Action (Play) ─► Sound ─ child of an ActorMi
 Event "Stop_v<talkId>" ─► Action (Stop) ─► same Sound
 ```
 
-- Wwise IDs are 32-bit FNV-1 hashes of the lowercased name (`Play_v600310100` = 1326246027). Arena Maker names its
+- Wwise IDs are 32-bit FNV-1 hashes of the lowercased name (`Play_v600310100` = 1326246027). ArenaTool names its
   objects `Sound_v<id>`, `Play_Action_v<id>`, `Stop_Action_v<id>`, and uses the talk ID itself as the media
   (source) ID, i.e. the audio file is `<talkId>.wem`.
 - Media IDs must stay small: every stock one is below 2^30, and in game a streamed source with an ID above 2^31 is
@@ -349,7 +349,7 @@ whose body is `int count; int arenaIds[count]`: the IDs of the cleared fights (*
 fight cleared lists exactly 100-128 and 200-211). See `010-templates/Formats/SL2/USER_DATA000.bt` in AC6_tools.
 
 So a custom fight's clear status follows its ArenaParam ID: if fights get renumbered (e.g. by reordering), clears
-move to whichever fight now has that ID. Since a tab is also ordered by ArenaParam ID, Arena Maker numbers fights by
+move to whichever fight now has that ID. Since a tab is also ordered by ArenaParam ID, ArenaTool numbers fights by
 list position (reordering works, a clear stays with its position) and ties all their other IDs to the fight itself.
 
 ## Open questions

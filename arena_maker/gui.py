@@ -1,4 +1,4 @@
-"""The Arena Maker window: the fight library plus building and launching. Run with `python -m arena_maker.gui`."""
+"""The ArenaTool window: the fight library plus building and launching. Run with `python -m arena_maker.gui`."""
 import os
 import ssl
 import sys
@@ -67,7 +67,7 @@ def run_task(text: str, task, parent=None):
     """Runs task(progress) in a thread behind a progress dialog; task may call progress(done, total).
     Returns (result, error message or None)."""
     dialog = QProgressDialog(text, None, 0, 0, parent)
-    dialog.setWindowTitle("Arena Maker")
+    dialog.setWindowTitle("ArenaTool")
     dialog.setAutoClose(False)  # Reaching 100% would otherwise close it while the task is still finishing up
     dialog.setAutoReset(False)
     errors = []
@@ -101,7 +101,7 @@ def download_tools(progress):
 class MainWindow(QMainWindow):
     def __init__(self, data_dir: str):
         super().__init__()
-        self.setWindowTitle(f"Arena Maker {__version__}")
+        self.setWindowTitle(f"ArenaTool {__version__}")
         self.resize(760, 520)
         self.setAcceptDrops(True)
         self.lib = library.load_library(data_dir)
@@ -244,8 +244,8 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Couldn't read the mod", error)
             return
         if overlaps and QMessageBox.warning(
-                self, "The mod overlaps with Arena Maker",
-                "This mod changes things Arena Maker also edits or relies on, so custom fights may not work as their "
+                self, "The mod overlaps with ArenaTool",
+                "This mod changes things ArenaTool also edits or relies on, so custom fights may not work as their "
                 "authors intended (other maps, rewards, AI behavior...):\n\n- " + "\n- ".join(overlaps)
                 + "\n\nUse it as the base mod anyway?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) != QMessageBox.StandardButton.Yes:
@@ -323,13 +323,14 @@ def main():
     if not tools.tools_installed():
         _, error = run_task("Downloading the tools (first run only)...", download_tools)
         if error:
-            QMessageBox.critical(None, "Arena Maker", f"Couldn't download the tools:\n\n{error}")
+            QMessageBox.critical(None, "ArenaTool", f"Couldn't download the tools:\n\n{error}")
             sys.exit(1)
     try:
         tools.check_tools()
     except FileNotFoundError as error:
-        QMessageBox.critical(None, "Arena Maker", str(error))
+        QMessageBox.critical(None, "ArenaTool", str(error))
         sys.exit(1)
+    library.migrate_data_dir()
     window = MainWindow(library.DEFAULT_DATA_DIR)
     window.show()
     sys.exit(app.exec())

@@ -1,8 +1,8 @@
-Third-party tools bundled in Arena Maker's tools.zip, unmodified except for the configuration noted below.
+Third-party tools bundled in ArenaTool's tools.zip, unmodified except for the configuration noted below.
 
 WitchyBND 3.0.1.0 (witchybnd/) - GPL-3.0, see WitchyBND-LICENSE.txt
   Source: https://github.com/ividyon/WitchyBND/tree/3.0.1.0
-  Configuration added by Arena Maker: appsettings.override.json, the Paramdex extracted from Assets/Paramdex.zip,
+  Configuration added by ArenaTool: appsettings.override.json, the Paramdex extracted from Assets/Paramdex.zip,
   and Assets/Paramdex/AC6/Upgrader/version.txt raised to 1_09_1_0042L.
 
 rewwise bnk2json 0.3.2 (rewwise/) - MIT or Apache-2.0, see rewwise-LICENSE-MIT.txt / rewwise-LICENSE-APACHE.txt

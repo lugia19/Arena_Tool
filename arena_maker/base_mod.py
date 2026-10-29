@@ -1,4 +1,4 @@
-"""What a base mod changes that Arena Maker also edits or relies on. Nothing is corrected automatically: the player
+"""What a base mod changes that ArenaTool also edits or relies on. Nothing is corrected automatically: the player
 sees the list and decides whether to build on top of that mod anyway."""
 import os
 import tempfile

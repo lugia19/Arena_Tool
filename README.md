@@ -1,6 +1,6 @@
-# Arena Maker
+# ArenaTool
 
-Arena Maker adds custom fights to the Arena in ARMORED CORE VI. You collect fights, which can come from other players
+ArenaTool adds custom fights to the Arena in ARMORED CORE VI. You collect fights, which can come from other players
 or be your own. It turns them into a mod and starts the game with it.
 
 A fight can have:
@@ -9,13 +9,13 @@ A fight can have:
 - intro and outro dialogue with voice lines
 - its own arena tab, alongside or instead of the stock fights
 
-# Using Arena Maker
+# Using ArenaTool
 
 ## Install
 
-1. Download `ArenaMaker-<version>-windows.zip` from the
-   [latest release](https://github.com/lugia19/Arena_Maker/releases/latest) and extract it anywhere.
-2. Run `ArenaMaker.exe`. On first run it sets up Python and downloads Arena Maker and the tools it needs, which takes
+1. Download `ArenaTool-<version>-windows.zip` from the
+   [latest release](https://github.com/lugia19/Arena_Tool/releases/latest) and extract it anywhere.
+2. Run `ArenaTool.exe`. On first run it sets up Python and downloads ArenaTool and the tools it needs, which takes
    a few minutes. After that it checks for updates and installs them every time it starts.
 
 The game is found automatically through Steam. If that fails, you'll be asked for the `Game` folder (the one with
@@ -27,7 +27,7 @@ The game is found automatically through Steam. If that fails, you'll be asked fo
 - **Add zip…** does the same for zip files.
 - You can also drag folders and zips onto the window.
 
-Arena Maker keeps its own copy of each fight, so you can delete the downloaded files afterwards. Adding a fight with
+ArenaTool keeps its own copy of each fight, so you can delete the downloaded files afterwards. Adding a fight with
 the same name and author as one you already have replaces that one.
 
 The list sets each tab's order: the first fight is the lowest rank. Change the order with **▲ / ▼**, and use
@@ -41,12 +41,12 @@ To play the custom fights together with another mod, such as a balance mod, use 
 pick that mod's folder. Pick the folder that mirrors the game's files, the one with `regulation.bin`, `msg`, and so on.
 
 - The fights are then built on top of that mod's files, so its changes to the regulation and text are kept.
-- Arena Maker's launch also loads the base mod, so its other files still apply.
+- ArenaTool's launch also loads the base mod, so its other files still apply.
 - Don't load the base mod separately as well. **Build && launch** already includes it.
 - **Clear** goes back to the stock game.
 
-When you choose a mod, Arena Maker compares it with the game and warns you about anything it changes that custom fights
-rely on: arena maps, the arena fights themselves, NPC and AI settings, and the menu files Arena Maker edits. Custom
+When you choose a mod, ArenaTool compares it with the game and warns you about anything it changes that custom fights
+rely on: arena maps, the arena fights themselves, NPC and AI settings, and the menu files ArenaTool edits. Custom
 fights may then play differently from what their authors intended; for example, a mod that moves the arena maps moves
 them for custom fights too. You decide whether to use it anyway.
 
@@ -66,7 +66,7 @@ Modded play uses a separate save, `AC6CustomArena.sl2`, so your normal save neve
 The game saves arena clears by position in the list. If you reorder fights or remove one, the clear marks stay with the
 positions, not with the fights.
 
-**Open data folder** shows where the library and the built mod are kept: `%APPDATA%\lugia19\ac6_arena_maker`.
+**Open data folder** shows where the library and the built mod are kept: `%APPDATA%\lugia19\ac6_arena_tool`.
 
 If something goes wrong, **Show log** displays the full build output.
 
@@ -122,7 +122,7 @@ A fight is a folder with a `fight.json` and the files it uses. Paths in `fight.j
   - `preview`: the arena preview.
   - `rankIcon`: the rank icon.
 
-  Any common image format works, and images are scaled to fit. Without a `rankIcon`, Arena Maker draws one from the
+  Any common image format works, and images are scaled to fit. Without a `rankIcon`, ArenaTool draws one from the
   fight's position, like `05/S`. You can override its text and color with `rank.text` and `rank.color`.
 - **Dialogue**:
   - `dialogue.intro` can have up to 3 lines and `dialogue.outro` up to 2.
@@ -159,7 +159,7 @@ The tools are downloaded into `tools/` on the first start of the window.
 - To build a release `tools.zip`, add `--zip PATH`, then update `TOOLS_VERSION`, `TOOLS_URL` and `TOOLS_SHA256` in
   `arena_maker/tools.py`.
 
-[docs/arena_format.md](docs/arena_format.md) documents how the game's arena works and what Arena Maker generates.
+[docs/arena_format.md](docs/arena_format.md) documents how the game's arena works and what ArenaTool generates.
 `launcher/` holds the [pygo-bootstrap](https://github.com/lugia19/pygo-bootstrap) settings and icon used for the
 release launcher.
 
