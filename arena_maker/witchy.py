@@ -1,11 +1,9 @@
-"""Wrapper around a pinned WitchyBND build: batched calls, fixed settings, and Oodle taken from the game folder.
+"""Wrapper around the bundled WitchyBND build: batched calls, output checks, and Oodle taken from the game folder.
 
-WitchyBND layers its settings as: appsettings.json (next to the exe) -> %APPDATA%/WitchyBND/appsettings.user.json
--> appsettings.override.json (next to the exe). We write the override file, so a user's own WitchyBND settings
-can't change what we produce.
+The bundled copy is pre-configured by scripts/prepare_tools.py (settings override, extracted Paramdex, regulation
+version gate), so the only thing written into its folder at runtime is the Oodle DLL.
 """
 import ctypes
-import json
 import os
 import re
 import shutil
@@ -18,25 +16,6 @@ from xml.etree import ElementTree
 WITCHY_VERSION = "3.0.1.0"
 TPF_PARSER_VERSION = "2170000"  # What WitchyBND 3.0.1 writes into _witchy-tpf.xml manifests
 OODLE_DLL = "oo2core_8_win64.dll"
-
-OVERRIDE_SETTINGS = {
-    "Bnd": True,
-    "Dcx": False,
-    # WitchyBND's default. Fields shared by >= 80% of rows go into a <defaults> section and are left out of those
-    # rows, so XML consumers must fall back to the defaults. 0 (no defaults) can't be repacked in 3.0.1: 78 of AC6's
-    # 257 params, including AccountParam/CharaInitParam/NpcParam/NpcThinkParam/TalkParam, fail to convert back.
-    "ParamDefaultValueThreshold": 0.8,
-    "ParamCellStyle": "Attribute",      # <row id="..." fieldName="value" .../>
-    "Recursive": False,                 # Only when asked for, per call.
-    "EndDelay": 0,
-    "PauseOnError": False,
-    "Parallel": True,
-    "Offline": True,                    # No update checks.
-    "TaeFolder": True,
-    "Flexible": True,
-    "BackupMethod": "None",
-    "GitBackup": False,
-}
 
 # Windows caps command lines at 32767 chars; stay well below it when batching paths.
 MAX_COMMAND_LINE = 30000
@@ -135,16 +114,6 @@ class Witchy:
                 raise FileNotFoundError(f"{OODLE_DLL} is missing and couldn't be copied from the game folder")
             shutil.copy2(os.path.join(game_dir, OODLE_DLL), oodle_path)
 
-        override_path = os.path.join(exe_dir, "appsettings.override.json")
-        try:
-            with open(override_path, encoding="utf-8") as f:
-                current = json.load(f)
-        except (OSError, ValueError):
-            current = None
-        if current != OVERRIDE_SETTINGS:
-            with open(override_path, "w", encoding="utf-8") as f:
-                json.dump(OVERRIDE_SETTINGS, f, indent=2)
-
     def _run(self, paths: Iterable[str], flags: List[str]):
         paths = [os.path.abspath(p) for p in paths]
         if not paths:
@@ -178,9 +147,8 @@ class Witchy:
     def repack(self, *paths: str, recursive: bool = False, compression_level: Optional[int] = REPACK_COMPRESSION_LEVEL):
         """Repacks unpacked folders / XML files back into the files they came from.
         compression_level overrides the Oodle level of binders (None keeps what their manifest says)."""
-        for path in paths:
-            self._allow_regulation_version(path)
-            if compression_level is not None:
+        if compression_level is not None:
+            for path in paths:
                 _set_compression_level(path, compression_level)
         started = time.time()
         self._run(paths, ["--repack"] + (["--recursive"] if recursive else []))
@@ -204,31 +172,6 @@ class Witchy:
         self.repack(*[os.path.join(folder, name + ".param.xml") for name in params])
         self.repack(folder)
     # endregion
-
-    def _allow_regulation_version(self, unpacked_dir: str):
-        """WitchyBND refuses to repack a regulation newer than Paramdex's Upgrader/version.txt. AC6's paramdefs were
-        last changed for 1.07 and still match 1.09.1 (every param unpacks against them; WitchyBND checks row sizes),
-        so only the version number is stale. Raise the gate to exactly this regulation's version, never further."""
-        manifest = os.path.join(unpacked_dir, "_witchy-bnd4.xml")
-        if not os.path.isfile(manifest):
-            return
-        root = ElementTree.parse(manifest).getroot()
-        game, version = root.findtext("game"), root.findtext("version")
-        if not game or not version or not version.isdigit():
-            return  # Not a regulation binder.
-        gate_path = os.path.join(os.path.dirname(self.exe_path), "Assets", "Paramdex", game, "Upgrader", "version.txt")
-        if not os.path.exists(gate_path):
-            return
-        with open(gate_path, encoding="utf-8") as f:
-            known = int(f.read().strip().replace("_", "").replace("L", ""))
-        if known >= int(version):
-            return
-        digits = version.rjust(8, "0")  # e.g. 10910042 -> 1_09_1_0042L, the format Paramdex uses
-        with open(gate_path, "w", encoding="utf-8") as f:
-            f.write(f"{digits[:-7]}_{digits[-7:-5]}_{digits[-5:-4]}_{digits[-4:]}L")
-        with open(gate_path, encoding="utf-8") as f:
-            if int(f.read().strip().replace("_", "").replace("L", "")) != int(version):
-                raise WitchyError(f"Couldn't raise the Paramdex regulation version in {gate_path}")
 
 
 # region Manifest editing

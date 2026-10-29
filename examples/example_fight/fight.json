@@ -1,0 +1,31 @@
+{
+  "format": 1,
+  "name": "Example One",
+  "ac": {"design": "example.design", "name": "Example", "pilot": "One"},
+  "arena": {
+    "description": "Something something, this is the arena description blurb.",
+    "map": 9411,
+    "firstReward": 1,
+    "rematchReward": 1
+  },
+  "ai": {"logic": "custom_logic.lua"},
+  "images": {
+    "emblem": "emblem.png",
+    "thumbnail": "thumbnail.png",
+    "preview": "preview.png",
+    "rankIcon": "rank_icon.png"
+  },
+  "dialogue": {
+    "speaker": 200,
+    "intro": [
+      {"text": "Intro 1", "audio": "intro1.wav"},
+      {"text": "Intro 2", "audio": "intro2.wav"},
+      {"text": "Intro 3", "audio": "intro3.wav"}
+    ],
+    "outro": [
+      {"text": "Outro 1", "audio": "outro1.wav"},
+      {"text": "Outro 2", "audio": "outro2.wav"}
+    ]
+  },
+  "addEmblemToDecals": true
+}

@@ -1,10 +1,4 @@
-wheel
-requests
-PyQt6
-xmltodict
+cryptography
 numpy
+Pillow
 soundfile
-pillow
-toml
-platformdirs
-chardet
