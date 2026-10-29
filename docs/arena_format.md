@@ -166,10 +166,17 @@ layout binder. Subtexture names end in `.png`; GFX files and the game refer to t
 
 Unlike rank icons, the menus don't reference single thumbnails: seven GFX files (`01_000_fe`, `01_texteffect_hi`,
 `02_acarena_preparing`, `02_acarena_select`, `02_decal_deleteimageselect`, `02_marking_imageselect`,
-`02_npcarenaresult`) define the whole `SB_DecalThumbnails` sheet as one external image with a target size of
-2048x2048 (**verified**). So custom thumbnails have to go into that sheet; a separate atlas won't be found. The 65 free
-cells are safe. Growing the sheet beyond 2048x2048 most likely also needs the target size in those GFX files raised
-(untested).
+`02_npcarenaresult`) define the whole `SB_DecalThumbnails` sheet as one external image, and the game finds a
+thumbnail by looking up `Decal_tmb_<emblemImageID:08>.png` in the layout. So custom thumbnails have to go into that
+sheet; a separate atlas won't be found.
+
+The sheet can grow. **Verified in game**: with the sheet grown to 2048x2108 and the GFX files untouched, a thumbnail
+whose cell crosses the old 2048 px edge showed completely, both next to the HP bar and in the decal selection menu.
+The target sizes the GFX files declare don't matter: they disagree with each other (2048x2048, 2048x1024, 1024x4096)
+and with the real sheet.
+
+Emblem IDs are shared with the player's decals: the same thumbnails (e.g. 11 and 12, Nosaac's and Carla's) show up
+in the decal selection menu. Custom fights need emblem IDs that don't collide with existing ones.
 
 ### Rank icons
 
@@ -262,5 +269,5 @@ move to whichever fight now has that ID. Custom fights need IDs that stay the sa
 
 ## Open questions
 
-- Growing `SB_DecalThumbnails` past 2048x2048 for more than 65 custom thumbnails.
+- Whether custom emblem IDs also show up in the player's decal list (probably controlled by a param, not the sheet).
 - Custom BGM.
