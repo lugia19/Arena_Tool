@@ -97,3 +97,6 @@ QScrollBar::add-page, QScrollBar::sub-page {
 QFrame[frameShape="4"] {
     background-color: #596273;
 }
+QStatusBar {
+    color: #A0A6B0;
+}

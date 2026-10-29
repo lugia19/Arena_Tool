@@ -154,7 +154,7 @@ class MainWindow(QMainWindow):
 
     def write_log(self, text: str):
         self.log.appendPlainText(text)
-        self.statusBar().showMessage(text)
+        self.statusBar().showMessage(f"> Current step: {text}")
 
     def toggle_log(self, shown: bool):
         self.log.setVisible(shown)
