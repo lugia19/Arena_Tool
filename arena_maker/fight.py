@@ -16,7 +16,8 @@ class DialogueLine:
 @dataclass
 class Fight:
     folder: str
-    name: str
+    name: str                    # name + author identify a fight in the library
+    author: str
     design: str                  # Absolute paths from here on
     ac_name: str
     pilot_name: str
@@ -64,7 +65,8 @@ def load_fight(folder: str) -> Fight:
 
     return Fight(
         folder=folder,
-        name=data.get("name", os.path.basename(os.path.normpath(folder))),
+        name=data["name"],
+        author=data["author"],
         design=path(data["ac"]["design"]),
         ac_name=data["ac"]["name"],
         pilot_name=data["ac"]["pilot"],

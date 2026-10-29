@@ -1,38 +1,71 @@
-"""python -m arena_maker build <fight folders...> [--out DIR] [--launch]"""
+"""Command line for the fight library and the build. Run `python -m arena_maker -h` for the commands."""
 import argparse
 import os
 import time
 
-from . import tools
-from .build import build
-from .fight import load_fight
+from . import library, tools
+from .build import PROFILE_NAME, build
 from .package import launch
 from .steam import find_game_dir
 
-DEFAULT_OUT = os.path.join(os.environ["APPDATA"], "lugia19", "ac6_arena_maker")
+DEFAULT_DATA = os.path.join(os.environ["APPDATA"], "lugia19", "ac6_arena_maker")
+
+
+def print_list(lib):
+    if not lib.entries:
+        print("The library is empty.")
+    for number, (fight, slot) in enumerate(library.library_fights(lib), 1):
+        print(f"{number:3}. [{fight.tab}] {fight.name} by {fight.author}  (slot {slot})")
+    print(f"Vanilla arena: {'hidden' if lib.hide_vanilla else 'shown'}")
 
 
 def main():
     parser = argparse.ArgumentParser(prog="arena_maker")
+    parser.add_argument("--data", default=DEFAULT_DATA, help="Library and build folder")
     commands = parser.add_subparsers(dest="command", required=True)
-    build_parser = commands.add_parser("build", help="Build the mod from fight folders (in arena list order, weakest first)")
-    build_parser.add_argument("fights", nargs="+")
-    build_parser.add_argument("--out", default=DEFAULT_OUT)
+    commands.add_parser("list", help="Show the fights in arena order")
+    add = commands.add_parser("add", help="Add or update fights from folders or zips")
+    add.add_argument("sources", nargs="+")
+    remove = commands.add_parser("remove", help="Remove a fight")
+    remove.add_argument("number", type=int)
+    move = commands.add_parser("move", help="Move a fight to another place in the list")
+    move.add_argument("number", type=int)
+    move.add_argument("position", type=int)
+    hide = commands.add_parser("hide-vanilla", help="Hide or show the stock arena fights")
+    hide.add_argument("state", choices=["on", "off"])
+    build_parser = commands.add_parser("build", help="Build the mod from the library")
     build_parser.add_argument("--game", help="Game folder (default: found through Steam)")
-    build_parser.add_argument("--hide-vanilla", action="store_true", help="Remove the stock arena fights")
     build_parser.add_argument("--launch", action="store_true", help="Start the game with the mod afterwards")
+    commands.add_parser("launch", help="Start the game with the last build")
     args = parser.parse_args()
 
-    tools.check_tools()
-    game_dir = args.game or find_game_dir()
-    if not game_dir:
-        raise SystemExit("Couldn't find ARMORED CORE VI through Steam; pass --game")
-    fights = [(load_fight(folder), slot) for slot, folder in enumerate(args.fights)]  # M1: slot = position
-    started = time.time()
-    profile = build(fights, game_dir, args.out, hide_vanilla_arena=args.hide_vanilla)
-    print(f"Built in {time.time() - started:.0f}s: {profile}")
-    if args.launch:
-        launch(tools.ME3, profile)
+    lib = library.load_library(args.data)
+    if args.command == "add":
+        for source in args.sources:
+            for message in library.import_source(lib, source):
+                print(message)
+    elif args.command == "remove":
+        library.remove(lib, args.number - 1)
+    elif args.command == "move":
+        library.move(lib, args.number - 1, args.position - 1)
+    elif args.command == "hide-vanilla":
+        lib.hide_vanilla = args.state == "on"
+        library.save_library(lib)
+    elif args.command in ("build", "launch"):
+        tools.check_tools()
+        if args.command == "build":
+            if not lib.entries:
+                raise SystemExit("The library is empty; add fights first")
+            game_dir = args.game or find_game_dir()
+            if not game_dir:
+                raise SystemExit("Couldn't find ARMORED CORE VI through Steam; pass --game")
+            started = time.time()
+            build(library.library_fights(lib), game_dir, args.data, hide_vanilla_arena=lib.hide_vanilla)
+            print(f"Built in {time.time() - started:.0f}s")
+        if args.command == "launch" or args.launch:
+            launch(tools.ME3, os.path.join(args.data, PROFILE_NAME))
+        return
+    print_list(lib)
 
 
 if __name__ == "__main__":
