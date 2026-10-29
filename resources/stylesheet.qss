@@ -98,7 +98,9 @@ QFrame[frameShape="4"] {
     background-color: #596273;
 }
 QStatusBar {
-    color: #A0A6B0;
+    color: #FFFFFF;
+    font-size: 10pt;
+    border-top: 1px solid #596273;
 }
 
 QGroupBox {
@@ -125,6 +127,10 @@ QPushButton#primary {
 QPushButton#primary:hover {
     background-color: #5d88a6;
 }
-QPushButton:disabled {
-    color: #6b7280;
+QPushButton:disabled, QPushButton#primary:disabled, QGroupBox QPushButton:disabled {
+    background-color: #1F2228;
+    color: #4B515C;
+}
+QCheckBox:disabled {
+    color: #4B515C;
 }

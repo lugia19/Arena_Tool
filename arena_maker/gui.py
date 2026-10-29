@@ -9,8 +9,8 @@ import urllib.request
 import certifi
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QGroupBox, QHBoxLayout, QHeaderView, QLabel,
-                             QMainWindow, QMessageBox, QPlainTextEdit, QProgressDialog, QPushButton, QTreeWidget,
-                             QTreeWidgetItem, QVBoxLayout, QWidget)
+                             QMainWindow, QMessageBox, QPlainTextEdit, QProgressBar, QProgressDialog, QPushButton,
+                             QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from . import __version__, library, tools
 from .base_mod import find_overlaps
@@ -21,6 +21,27 @@ from .steam import find_game_dir
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STYLESHEET = os.path.join(ROOT, "resources", "stylesheet.qss")
 EXAMPLE_FIGHT = os.path.join(ROOT, "examples", "example_fight")
+
+
+def checked_out_commit():
+    """Short hash of the checked-out commit, which says more than the version since the launcher keeps the clone
+    up to date. Read from .git directly: players don't necessarily have git, the launcher clones with dulwich."""
+    git = os.path.join(ROOT, ".git")
+    try:
+        with open(os.path.join(git, "HEAD"), encoding="utf-8") as f:
+            head = f.read().strip()
+        if head.startswith("ref: "):
+            ref = head[5:]
+            ref_path = os.path.join(git, *ref.split("/"))
+            if os.path.exists(ref_path):
+                with open(ref_path, encoding="utf-8") as f:
+                    head = f.read().strip()
+            else:  # Packed: "<hash> <ref>" lines
+                with open(os.path.join(git, "packed-refs"), encoding="utf-8") as f:
+                    head = next(line.split()[0] for line in f if line.rstrip().endswith(" " + ref))
+        return head[:7]
+    except (OSError, StopIteration):
+        return None
 
 
 class BuildWorker(QObject):
@@ -103,7 +124,8 @@ def download_tools(progress):
 class MainWindow(QMainWindow):
     def __init__(self, data_dir: str):
         super().__init__()
-        self.setWindowTitle(f"ArenaTool {__version__}")
+        commit = checked_out_commit()
+        self.setWindowTitle(f"ArenaTool ({commit})" if commit else f"ArenaTool {__version__}")
         self.resize(760, 520)
         self.setAcceptDrops(True)
         first_start = not os.path.exists(os.path.join(data_dir, library.LIBRARY_FILE))
@@ -129,6 +151,12 @@ class MainWindow(QMainWindow):
         self.log_toggle = QPushButton("Show log")
         self.log_toggle.setCheckable(True)
         self.log_toggle.toggled.connect(self.toggle_log)
+        self.busy = QProgressBar()  # Moving bar next to the status line while a build runs
+        self.busy.setRange(0, 0)
+        self.busy.setTextVisible(False)
+        self.busy.setFixedSize(140, 12)
+        self.busy.setVisible(False)
+        self.statusBar().addPermanentWidget(self.busy)
 
         def button(text, slot):
             widget = QPushButton(text)
@@ -305,8 +333,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Couldn't load the fights", str(error))
             return
 
-        for widget in self.buttons:
-            widget.setEnabled(False)
+        self.set_busy(True)
         self.write_log("Building...")
         self.thread = QThread()
         self.worker = BuildWorker(fights, game_dir, self.lib.data_dir, self.lib.base_mod, self.lib.hide_vanilla,
@@ -320,9 +347,13 @@ class MainWindow(QMainWindow):
         self.thread.start()
 
     def build_finished(self):
-        for widget in self.buttons:
-            widget.setEnabled(True)
+        self.set_busy(False)
         self.thread = self.worker = None
+
+    def set_busy(self, busy: bool):
+        for widget in self.buttons + [self.hide_vanilla]:
+            widget.setEnabled(not busy)
+        self.busy.setVisible(busy)
     # endregion
 
 
