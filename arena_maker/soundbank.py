@@ -103,8 +103,11 @@ class VoiceLineAdder:
     """Adds talk voice lines (Play_v<talkId>/Stop_v<talkId> events) to a bank, cloned from an existing line.
 
     Per line: Event Play_v<id> -> Action Play_Action_v<id> -> Sound Sound_v<id> (child of the template's ActorMixer),
-    plus the matching Stop event/action. The audio is streamed from a loose sd/wem/<fnv("Source_v<id>")>.wem rather
-    than embedded, so the bank doesn't grow with every line (PCM is ~5 MB/min, and Wwise keeps whole banks in memory).
+    plus the matching Stop event/action. The audio is streamed from a loose sd/wem/<talkId>.wem rather than embedded,
+    so the bank doesn't grow with every line (PCM is ~5 MB/min, and Wwise keeps whole banks in memory).
+
+    The talk ID doubles as the media (source) ID. Every stock media ID is below 2^30, and in game a streamed source
+    with an ID above 2^31 is never requested (tested 2026-10-29: hashed IDs like 2731632413 stayed silent).
 
     Tested in game through ME3 (2026-10-29): Streaming + PCM plays fully with in_memory_media_size set to the PCM
     header size (or 0); the full file size cuts playback short. With source_flags 0 (not language-specific) ME3 serves
@@ -128,7 +131,7 @@ class VoiceLineAdder:
 
     def add(self, talk_id: int, wem: bytes) -> str:
         """Adds or replaces the line. Returns the package-relative path the wem must be written to."""
-        source_id = fnv_hash(f"Source_v{talk_id}")
+        source_id = talk_id
 
         sound = self.bank._ensure(f"Sound_v{talk_id}", self.sound)
         source = sound["body"]["Sound"]["bank_source_data"]

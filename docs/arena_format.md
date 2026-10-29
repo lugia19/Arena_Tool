@@ -237,7 +237,10 @@ Event "Stop_v<talkId>" ─► Action (Stop) ─► same Sound
 ```
 
 - Wwise IDs are 32-bit FNV-1 hashes of the lowercased name (`Play_v600310100` = 1326246027). Arena Maker names its
-  objects `Sound_v<id>`, `Play_Action_v<id>`, `Stop_Action_v<id>`, `Source_v<id>` (the audio file).
+  objects `Sound_v<id>`, `Play_Action_v<id>`, `Stop_Action_v<id>`, and uses the talk ID itself as the media
+  (source) ID, i.e. the audio file is `<talkId>.wem`.
+- Media IDs must stay small: every stock one is below 2^30, and in game a streamed source with an ID above 2^31 is
+  never requested at all (**verified**: hashed source IDs like 2731632413 stayed silent while 494648092 played).
 - ActorMixer child lists are kept sorted ascending.
 - 38 accounts have arena lines in the bank. 37 have all five; Carla (account 310) only has the 1st intro and 2nd outro
   line. Nosaac (account 160, ArenaParam 103) has all five, so it's a good fight for testing.
