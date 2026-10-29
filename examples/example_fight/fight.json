@@ -3,6 +3,7 @@
   "name": "Example One",
   "author": "lugia19",
   "tab": "CUSTOM ARENA",
+  "tabColor": "#4fc3f7",
   "ac": {"design": "example.design", "name": "Example", "pilot": "One"},
   "arena": {
     "description": "Something something, this is the arena description blurb.",

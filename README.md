@@ -45,6 +45,11 @@ pick that mod's folder. Pick the folder that mirrors the game's files, the one w
 - Don't load the base mod separately as well. **Build && launch** already includes it.
 - **Clear** goes back to the stock game.
 
+When you choose a mod, Arena Maker compares it with the game and warns you about anything it changes that custom fights
+rely on: arena maps, the arena fights themselves, NPC and AI settings, and the menu files Arena Maker edits. Custom
+fights may then play differently from what their authors intended; for example, a mod that moves the arena maps moves
+them for custom fights too. You decide whether to use it anyway.
+
 ## Playing
 
 - **Build && launch** builds the mod and starts the game.
@@ -100,7 +105,8 @@ A fight is a folder with a `fight.json` and the files it uses. Paths in `fight.j
 ## Optional fields
 
 - **Tab**: `tab` names the arena tab the fight appears in. The default is `CUSTOM ARENA`. Fights with the same tab name
-  are grouped, with up to 20 custom tabs.
+  are grouped, with up to 20 custom tabs. `tabColor` (`#rrggbb`) colors the tab name; the first fight in a tab that
+  sets one decides it.
 - **Arena settings**:
   - `arena.map`: the arena map.
   - `firstReward` / `rematchReward`: COAM rewards.

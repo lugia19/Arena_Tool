@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QHBoxLayout, 
                              QVBoxLayout, QWidget)
 
 from . import __version__, library, tools
+from .base_mod import find_overlaps
 from .build import PROFILE_NAME, build
 from .package import launch
 from .steam import find_game_dir
@@ -43,38 +44,34 @@ class BuildWorker(QObject):
             self.finished.emit()
 
 
-class DownloadWorker(QObject):
+class TaskWorker(QObject):
     progress = pyqtSignal(int, int)
     failed = pyqtSignal(str)
     finished = pyqtSignal()
 
+    def __init__(self, task):
+        super().__init__()
+        self.task = task
+        self.result = None
+
     def run(self):
         try:
-            with tempfile.TemporaryDirectory() as temp:
-                zip_path = os.path.join(temp, "tools.zip")
-                # Python only sees root certificates Windows has already fetched, which may not include GitHub's
-                context = ssl.create_default_context(cafile=certifi.where())
-                with urllib.request.urlopen(tools.TOOLS_URL, context=context) as response, open(zip_path, "wb") as f:
-                    total, done = int(response.headers.get("Content-Length", 0)), 0
-                    while chunk := response.read(1 << 20):
-                        f.write(chunk)
-                        done += len(chunk)
-                        self.progress.emit(done, total)
-                tools.install_tools(zip_path)
+            self.result = self.task(self.progress.emit)
         except Exception as error:
             self.failed.emit(str(error))
         finally:
             self.finished.emit()
 
 
-def download_tools():
-    """Downloads and installs tools.zip behind a progress dialog. Returns an error message, or None on success."""
-    dialog = QProgressDialog("Downloading the tools (first run only)...", None, 0, 0)
+def run_task(text: str, task, parent=None):
+    """Runs task(progress) in a thread behind a progress dialog; task may call progress(done, total).
+    Returns (result, error message or None)."""
+    dialog = QProgressDialog(text, None, 0, 0, parent)
     dialog.setWindowTitle("Arena Maker")
-    dialog.setAutoClose(False)  # Reaching 100% would otherwise close it while the zip is still being extracted
+    dialog.setAutoClose(False)  # Reaching 100% would otherwise close it while the task is still finishing up
     dialog.setAutoReset(False)
     errors = []
-    thread, worker = QThread(), DownloadWorker()
+    thread, worker = QThread(), TaskWorker(task)
     worker.moveToThread(thread)
     thread.started.connect(worker.run)
     worker.progress.connect(lambda done, total: (dialog.setMaximum(total), dialog.setValue(done)))
@@ -84,7 +81,21 @@ def download_tools():
     thread.start()
     dialog.exec()
     thread.wait()
-    return errors[0] if errors else None
+    return worker.result, errors[0] if errors else None
+
+
+def download_tools(progress):
+    with tempfile.TemporaryDirectory() as temp:
+        zip_path = os.path.join(temp, "tools.zip")
+        # Python only sees root certificates Windows has already fetched, which may not include GitHub's
+        context = ssl.create_default_context(cafile=certifi.where())
+        with urllib.request.urlopen(tools.TOOLS_URL, context=context) as response, open(zip_path, "wb") as f:
+            total, done = int(response.headers.get("Content-Length", 0)), 0
+            while chunk := response.read(1 << 20):
+                f.write(chunk)
+                done += len(chunk)
+                progress(done, total)
+        tools.install_tools(zip_path)
 
 
 class MainWindow(QMainWindow):
@@ -224,8 +235,22 @@ class MainWindow(QMainWindow):
     def choose_base_mod(self):
         folder = QFileDialog.getExistingDirectory(self, "Select the base mod's folder (the one with regulation.bin, "
                                                         "msg, etc.)")
-        if folder:
-            self.set_base_mod(os.path.normpath(folder))
+        game_dir = self.find_game() if folder else None
+        if not game_dir:
+            return
+        folder = os.path.normpath(folder)
+        overlaps, error = run_task("Comparing the mod with the game...", lambda _: find_overlaps(game_dir, folder), self)
+        if error:
+            QMessageBox.critical(self, "Couldn't read the mod", error)
+            return
+        if overlaps and QMessageBox.warning(
+                self, "The mod overlaps with Arena Maker",
+                "This mod changes things Arena Maker also edits or relies on, so custom fights may not work as their "
+                "authors intended (other maps, rewards, AI behavior...):\n\n- " + "\n- ".join(overlaps)
+                + "\n\nUse it as the base mod anyway?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) != QMessageBox.StandardButton.Yes:
+            return
+        self.set_base_mod(folder)
 
     def set_base_mod(self, folder):
         self.lib.base_mod = folder
@@ -245,18 +270,25 @@ class MainWindow(QMainWindow):
     # endregion
 
     # region Building
-    def start_build(self, launch_after: bool):
-        if not self.lib.entries:
-            QMessageBox.information(self, "Nothing to build", "Add some fights first.")
-            return
+    def find_game(self):
+        """The game folder: found through Steam, or asked for once and remembered. None if the player cancels."""
         game_dir = find_game_dir() or self.lib.game_dir
         if not game_dir:
             game_dir = QFileDialog.getExistingDirectory(self, "Select the ARMORED CORE VI Game folder")
             if not game_dir or not os.path.exists(os.path.join(game_dir, "armoredcore6.exe")):
                 QMessageBox.warning(self, "Game not found", "That folder doesn't contain armoredcore6.exe.")
-                return
+                return None
             self.lib.game_dir = game_dir
             library.save_library(self.lib)
+        return game_dir
+
+    def start_build(self, launch_after: bool):
+        if not self.lib.entries:
+            QMessageBox.information(self, "Nothing to build", "Add some fights first.")
+            return
+        game_dir = self.find_game()
+        if not game_dir:
+            return
         try:
             fights = library.library_fights(self.lib)
         except Exception as error:
@@ -289,7 +321,7 @@ def main():
     with open(STYLESHEET, encoding="utf-8") as f:
         app.setStyleSheet(f.read())
     if not tools.tools_installed():
-        error = download_tools()
+        _, error = run_task("Downloading the tools (first run only)...", download_tools)
         if error:
             QMessageBox.critical(None, "Arena Maker", f"Couldn't download the tools:\n\n{error}")
             sys.exit(1)

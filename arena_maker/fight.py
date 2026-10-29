@@ -1,6 +1,7 @@
 """The fight format: a folder with a fight.json and the files it refers to (example: examples/example_fight)."""
 import json
 import os
+import re
 from dataclasses import dataclass, field
 from typing import List, Optional
 
@@ -41,6 +42,7 @@ class Fight:
     outro: List[DialogueLine] = field(default_factory=list)
     add_emblem_to_decals: bool = True
     tab: str = "CUSTOM ARENA"        # Fights with the same tab name share an arena tab
+    tab_color: Optional[str] = None  # "#rrggbb"; the first fight in a tab that sets one decides
 
 
 def load_fight(folder: str) -> Fight:
@@ -60,6 +62,8 @@ def load_fight(folder: str) -> Fight:
     arena, ai, images, rank, dialogue = (data.get(key, {}) for key in ("arena", "ai", "images", "rank", "dialogue"))
     lines = {kind: [DialogueLine(line["text"], path(line.get("audio"))) for line in dialogue.get(kind, [])]
              for kind in ("intro", "outro")}
+    if data.get("tabColor") is not None and not re.fullmatch(r"#[0-9a-fA-F]{6}", data["tabColor"]):
+        raise ValueError(f"{folder}: tabColor must look like #ff9900")
     if len(lines["intro"]) > 3 or len(lines["outro"]) > 2:
         raise ValueError(f"{folder}: at most 3 intro and 2 outro lines")
 
@@ -90,4 +94,5 @@ def load_fight(folder: str) -> Fight:
         outro=lines["outro"],
         add_emblem_to_decals=data.get("addEmblemToDecals", True),
         tab=data.get("tab", "CUSTOM ARENA"),
+        tab_color=data.get("tabColor"),
     )

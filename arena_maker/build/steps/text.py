@@ -6,12 +6,18 @@ LANGUAGES = ["deude", "engus", "frafr", "itait", "jpnjp", "korkr", "polpl", "por
              "thath", "zhocn", "zhotw"]
 
 
+def tab_text(tab: str, fights) -> str:
+    """The tab name, colored (with the game's <font> markup) by the first fight in the tab that sets a color."""
+    color = next((fight.tab_color for fight, _ in fights if fight.tab == tab and fight.tab_color), None)
+    return f'<font color="{color}">{tab}</font>' if color else tab
+
+
 def apply(ctx, fights):
     for language in LANGUAGES:
         menu = f"msg/{language}/menu.msgbnd.dcx"
         menu_text, profiles, talk = (ctx.fmg(menu, name) for name in ("FNR_メニューテキスト", "ランカープロフィール", "会話"))
         for fight, ids in fights:
-            menu_text.set_text(tab_name_text_id(ids.category), fight.tab)
+            menu_text.set_text(tab_name_text_id(ids.category), tab_text(fight.tab, fights))
             profiles.set_text(ids.arena, fight.description)
             for i, line in enumerate(fight.intro):
                 talk.set_text(ids.intro_talk(i), line.text)

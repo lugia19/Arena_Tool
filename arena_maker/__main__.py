@@ -5,6 +5,7 @@ import os
 import time
 
 from . import library, tools
+from .base_mod import find_overlaps
 from .build import PROFILE_NAME, build
 from .package import launch
 from .steam import find_game_dir
@@ -54,7 +55,19 @@ def main():
         lib.hide_vanilla = args.state == "on"
         library.save_library(lib)
     elif args.command == "base-mod":
-        lib.base_mod = None if args.folder.lower() == "none" else os.path.abspath(args.folder)
+        folder = None if args.folder.lower() == "none" else os.path.abspath(args.folder)
+        if folder:
+            tools.check_tools()
+            game_dir = find_game_dir() or lib.game_dir
+            if not game_dir:
+                raise SystemExit("Couldn't find ARMORED CORE VI through Steam")
+            overlaps = find_overlaps(game_dir, folder)
+            if overlaps:
+                print("This mod changes things Arena Maker also edits or relies on, so custom fights may not work as "
+                      "their authors intended:\n  " + "\n  ".join(overlaps))
+                if input("Use it as the base mod anyway? [y/N] ").strip().lower() != "y":
+                    return
+        lib.base_mod = folder
         library.save_library(lib)
     elif args.command in ("build", "launch"):
         tools.check_tools()

@@ -14,6 +14,11 @@ def apply(ctx, fights):
     npc, npc_think, talk = ctx.param("NpcParam"), ctx.param("NpcThinkParam"), ctx.param("TalkParam")
     preset_emblems = ctx.param("PresetEmblemSpec")
 
+    used = {arena.values(row)["category"] for row in arena.rows if row.get("id") != "0"}
+    taken = sorted({ids.category for _, ids in fights if str(ids.category) in used})
+    if taken:  # A base mod's own tabs
+        raise ValueError(f"Arena tab categories {taken} are already used by the base mod")
+
     for fight, ids in fights:
         arena.clone_row(TEMPLATE_ARENA, ids.arena, paramdexName=f"Custom: {fight.name}", category=ids.category,
                         missionParamID=fight.map_id, rankIconID=ids.rank_icon,
@@ -46,5 +51,5 @@ def apply(ctx, fights):
 
     if ctx.hide_vanilla_arena:  # ArenaParam has no "enabled" field, so the stock fights go (row 0 is an empty dummy)
         for row in list(arena.rows):
-            if row.get("id") != "0" and row.get("category", "0") in STOCK_TAB_CATEGORIES:
+            if row.get("id") != "0" and arena.values(row)["category"] in STOCK_TAB_CATEGORIES:
                 arena.remove_row(int(row.get("id")))
