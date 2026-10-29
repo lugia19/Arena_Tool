@@ -8,9 +8,9 @@ import urllib.request
 
 import certifi
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
-from PyQt6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QHBoxLayout, QHeaderView, QLabel, QMainWindow,
-                             QMessageBox, QPlainTextEdit, QProgressDialog, QPushButton, QTreeWidget, QTreeWidgetItem,
-                             QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QGroupBox, QHBoxLayout, QHeaderView, QLabel,
+                             QMainWindow, QMessageBox, QPlainTextEdit, QProgressDialog, QPushButton, QTreeWidget,
+                             QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from . import __version__, library, tools
 from .base_mod import find_overlaps
@@ -18,7 +18,9 @@ from .build import PROFILE_NAME, build
 from .package import launch
 from .steam import find_game_dir
 
-STYLESHEET = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "resources", "stylesheet.qss")
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STYLESHEET = os.path.join(ROOT, "resources", "stylesheet.qss")
+EXAMPLE_FIGHT = os.path.join(ROOT, "examples", "example_fight")
 
 
 class BuildWorker(QObject):
@@ -104,7 +106,10 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(f"ArenaTool {__version__}")
         self.resize(760, 520)
         self.setAcceptDrops(True)
+        first_start = not os.path.exists(os.path.join(data_dir, library.LIBRARY_FILE))
         self.lib = library.load_library(data_dir)
+        if first_start and os.path.isdir(EXAMPLE_FIGHT):
+            library.import_source(self.lib, EXAMPLE_FIGHT)  # Something to try right away; removing it sticks
         self.thread = self.worker = None
 
         self.fights = QTreeWidget()
@@ -136,7 +141,19 @@ class MainWindow(QMainWindow):
                         button("Build", lambda: self.start_build(False)),
                         button("Build && launch", lambda: self.start_build(True)),
                         button("Choose…", self.choose_base_mod), button("Clear", lambda: self.set_base_mod(None))]
-        up, down, add_folder, add_zip, remove, open_folder, build_button, build_launch, choose_base, clear_base =             self.buttons
+        (up, down, add_folder, add_zip, remove, open_folder, build_button, build_launch, choose_base,
+         clear_base) = self.buttons
+        build_launch.setObjectName("primary")  # The main action, highlighted by the stylesheet
+
+        def row(*widgets, stretch_at=None):
+            box = QHBoxLayout()
+            for i, widget in enumerate(widgets):
+                if i == stretch_at:
+                    box.addStretch()
+                box.addWidget(widget)
+            if stretch_at == len(widgets):
+                box.addStretch()
+            return box
 
         arrows = QVBoxLayout()
         arrows.addWidget(up)
@@ -145,25 +162,18 @@ class MainWindow(QMainWindow):
         top = QHBoxLayout()
         top.addWidget(self.fights)
         top.addLayout(arrows)
-        edit_row = QHBoxLayout()
-        for widget in (add_folder, add_zip, remove):
-            edit_row.addWidget(widget)
-        edit_row.addStretch()
-        edit_row.addWidget(self.hide_vanilla)
-        base_row = QHBoxLayout()
-        base_row.addWidget(self.base_mod)
-        base_row.addStretch()
-        base_row.addWidget(choose_base)
-        base_row.addWidget(clear_base)
-        build_row = QHBoxLayout()
-        build_row.addWidget(open_folder)
-        build_row.addWidget(self.log_toggle)
-        build_row.addStretch()
-        build_row.addWidget(build_button)
-        build_row.addWidget(build_launch)
+
+        # What gets built: options for the mod itself, apart from the fight list
+        settings = QGroupBox("Mod settings")
+        settings_layout = QVBoxLayout(settings)
+        settings_layout.addWidget(self.hide_vanilla)
+        settings_layout.addLayout(row(self.base_mod, choose_base, clear_base, stretch_at=1))
+
         layout = QVBoxLayout()
-        for row in (top, edit_row, base_row, build_row):
-            layout.addLayout(row)
+        layout.addLayout(top)
+        layout.addLayout(row(add_folder, add_zip, remove, stretch_at=3))
+        layout.addWidget(settings)
+        layout.addLayout(row(open_folder, self.log_toggle, build_button, build_launch, stretch_at=2))
         layout.addWidget(self.log)
         central = QWidget()
         central.setLayout(layout)
