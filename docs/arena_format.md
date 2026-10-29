@@ -93,7 +93,7 @@ template because all her IDs are the same number.
 |---|---|---|---|
 | `msgId` | `msgId` | 600310100 | TalkMsg (`会話`) entry, the subtitle. |
 | `voiceId` | `voiceId` | 600310100 | The `Play_v<voiceId>` event in the soundbank. |
-| `talkerID` | `characterNameTextId` | 200 | Speaker: an AccountParam-style ID; the subtitle shows NpcName text `talkerID + 3` (200 -> 203 "ALLMIND", 70 -> 73 "Handler Walter"). A named speaker gets talkerID 17000 + 10 * slot with its name at +3. |
+| `talkerID` | `characterNameTextId` | 200 | Speaker: an AccountParam row; the subtitle shows NpcName text `nameTextID + 3` of that row (200 -> 203 "ALLMIND", 70 -> 73 "Handler Walter"). A talkerID without an AccountParam row shows no speaker (**verified**). A named speaker gets AccountParam row 17000 + 10 * slot, cloned from 200, with its name at +3. |
 
 Talk IDs come from the AccountParam ID (from the guide, matches all stock arena lines):
 

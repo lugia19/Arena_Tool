@@ -26,7 +26,7 @@ class FightIds:
     preset_emblem: int   # PresetEmblemSpec row
     rank_icon: int       # ArenaParam.rankIconID = frame of the rank icon sprite
     category: int        # ArenaParam.category = the fight's tab
-    speaker: int         # TalkParam.talkerID for a speaker named in fight.json; subtitles show text speaker+3
+    speaker: int         # AccountParam row (= TalkParam.talkerID) of a speaker named in fight.json; name at +3
 
     def intro_talk(self, line: int) -> int:
         return 600000000 + self.account * 1000 + 100 + line

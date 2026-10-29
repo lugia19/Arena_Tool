@@ -3,6 +3,7 @@ from ...ids import PRESET_EMBLEM_CATEGORY
 
 TEMPLATE_ARENA = 118
 TEMPLATE_ACCOUNT = 310
+TEMPLATE_SPEAKER = 200  # ALLMIND's account: a speaker without an AC
 TEMPLATE_CHARA = 11200000
 TEMPLATE_TALK = 600310100
 TEMPLATE_PRESET_EMBLEM = 1250
@@ -40,7 +41,11 @@ def apply(ctx, fights):
         elif fight.logic_id is not None:
             think_row.set("logicId", str(fight.logic_id))
 
-        talker = ids.speaker if isinstance(fight.speaker, str) else fight.speaker
+        talker = fight.speaker
+        if isinstance(fight.speaker, str):  # The subtitle shows text nameTextID + 3 of the talker's account
+            account.clone_row(TEMPLATE_SPEAKER, ids.speaker, paramdexName=f"Custom: {fight.name} speaker",
+                              nameTextID=ids.speaker)
+            talker = ids.speaker
         talk_ids = [ids.intro_talk(i) for i in range(len(fight.intro))] + [ids.outro_talk(i) for i in range(len(fight.outro))]
         for talk_id in talk_ids:
             talk.clone_row(TEMPLATE_TALK, talk_id, paramdexName=f"Custom: {fight.name}", msgId=talk_id,
