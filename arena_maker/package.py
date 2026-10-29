@@ -3,6 +3,7 @@
 A package mirrors the game's file layout (regulation.bin, msg/engus/..., menu/hi/..., sd/enus/..., sd/wem/...);
 ME3 serves any file in it instead of the game's own. Only final files go in: no unpacked folders or manifests.
 """
+import json
 import os
 import shutil
 import subprocess
@@ -67,9 +68,10 @@ class PackageBuilder:
 
 
 def _toml_string(value: str) -> str:
-    # Literal strings (single quotes) avoid having to escape Windows backslashes, as ME3's own docs do.
+    # Literal strings (single quotes) avoid having to escape Windows backslashes, as ME3's own docs do. They can't
+    # hold a quote (e.g. "Grayson's Mod"), so those become basic strings, for which JSON's escaping is valid TOML.
     if "'" in value or "\n" in value:
-        raise ValueError(f"Can't write {value!r} as a TOML literal string")
+        return json.dumps(value, ensure_ascii=False)
     return f"'{value}'"
 
 
