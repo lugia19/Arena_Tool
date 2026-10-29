@@ -7,13 +7,13 @@ from ..fight import Fight
 from ..ids import TAB_CATEGORIES, fight_ids
 from ..package import PackageBuilder, write_profile
 from .context import BuildContext
-from .steps import ai, designs, images, ranks, regulation, text, voice
+from .steps import ai, designs, images, music, ranks, regulation, text, voice
 
 PACKAGE_NAME = "CustomArena"
 BASE_PACKAGE_NAME = "BaseMod"
 PROFILE_NAME = "custom_arena.me3"
 SAVEFILE = "AC6CustomArena.sl2"  # ME3 copies the player's save to this on first launch
-STEPS = [regulation, text, designs, ai, images, ranks, voice]
+STEPS = [regulation, text, designs, ai, images, ranks, voice, music]
 
 
 def build(fights: List[Tuple[Fight, int]], game_dir: str, out_dir: str, base_mod: Optional[str] = None,

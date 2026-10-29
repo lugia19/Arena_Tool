@@ -26,7 +26,8 @@ def apply(ctx, fights):
                         ranker_accountParamID=ids.account, ranker_chrInitParamID=ids.chara,
                         ranker_npcParamID=ids.chara, ranker_thinkParamID=ids.chara,
                         firstReward_cash=fight.first_reward, rematchReward_cash=fight.rematch_reward,
-                        startCutsceneId=fight.start_cutscene, endCutsceneId=fight.end_cutscene, bgmId=fight.bgm)
+                        startCutsceneId=fight.start_cutscene, endCutsceneId=fight.end_cutscene,
+                        bgmId=ids.bgm if fight.music else fight.bgm)
 
         account_row = account.clone_row(TEMPLATE_ACCOUNT, ids.account, paramdexName=f"Custom: {fight.name}",
                                         nameTextID=ids.account)

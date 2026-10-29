@@ -257,8 +257,61 @@ PCM `.wem`: RIFF/WAVE, `fmt ` tag `0xFFFE`, 24-byte fmt chunk ending in the Wwis
 standard, front L+R), a 4-byte `JUNK` chunk, then 16-bit samples. Stereo only: mono input has to be duplicated to
 two channels (the old converter wrote a stereo channel config into mono files).
 
-Not looked at yet: custom BGM. `bgmId` picks the track; rewwise 0.3+ can parse the music decision trees in
-`cs_main.bnk`.
+## Music (`sd/init.bnk`, `sd/cs_smain.bnk`)
+
+All music is in `cs_smain.bnk` (not `cs_main`). Everything below is **verified in game** (2026-10-29) unless noted.
+
+```
+ArenaParam.bgmId (e.g. 21000)
+  ─► Wwise game parameter BGM_ID = 21000.0
+  ─► init.bnk STMG: switch group BGM_ID (3012934567 = fnv("BGM_ID")) is driven by that parameter through a table of
+     points (rtpc_value ─► switch value), constant curve: a value between points snaps to a neighbouring point
+  ─► cs_smain.bnk MusicSwitchContainer 945903041, decision tree over 6 groups:
+       State 3898567437 / Switch BGM_ID / State 2176308960 (phase: normal, in_combat, heat_up_1-5, death) /
+       State 969773702 / State 2354612607 / State 3568898208      ("*" = any value; BestMatch)
+  ─► playlist (MusicRandomSequenceContainer) ─► segments (MusicSegment) ─► MusicTrack ─► streamed .wem
+```
+
+- **The table** has 67 points: 0-9, 9000, the 60 numbers with arena music (12000-13010, 21000-24300, 33000,
+  40000-43000, 50000-50030, 60000-60010, 90001), plus 21210, 50010, 60020, 90000, 90002 (no arena music) and
+  100000 ─► none. Nothing lies between 60020 and 90000. A number that isn't a point snaps to a neighbour: 77700 played
+  60020's (silent) entry until it got its own point.
+- **Switch values** are FNV-1 of an unknown prefix + the number. Every stock value continues the hash from the same
+  state, 1870080928, so the value for any number can be computed without the prefix (`soundbank.bgm_switch_value`).
+- **Unknown switch values** hit the tree's catch-all, a silent 4.9 s segment.
+- **Stock songs** are one long Vorbis .wem cut into an intro segment (played once) and a loop segment (forever) in
+  a playlist; e.g. 21000 "Analysis" = playlist 409791442 (segments 619349637 then 684054416, both from wem
+  798507079). 50000, the default arena music, is "Cinder" Carla's "Rough and Decent" (wem 209111615).
+- **Death**: most numbers route `death` to a silent 4.9 s segment (933200949 or 1070742183), so the music stops; a few
+  (e.g. 50000) have a real piece played once.
+- **21xxx is special-cased by the game**: new numbers 21004, 21005 and 21012 played mission music (wem 374197011 from
+  the mission switch 375664304, which switches on map areas and mission states) even with chart entries and a
+  rerouted catch-all. An exe function maps 21000-21011 to small values, but 21012 behaves the same, so the cause is
+  still open. Custom numbers stay out of this range.
+
+**Custom music** (`build/steps/music.py`, `soundbank.MusicAdder`), per fight with a slot:
+
+- bgmId `70000 + slot`, added as a table point in `init.bnk` (points kept sorted, `graph_point_count` updated).
+- A branch `* / BGM_ID=<bgmId> / {*: playlist, death: silent segment / custom playlist / none} / * / * / *` in
+  945903041's tree. Every level is sorted by key; nodes are 12 bytes (`tree_size` = nodes × 12) and stored as "a
+  node's children contiguously, then each child's subtree in order", which reproduces the stock layout exactly
+  (bnk2json recalculates counts but not `first_child_index`). New playlists are added to 945903041's sorted child
+  list.
+- Track/segment/playlist objects cloned from "Analysis"'s loop part, inserted before 945903041 (children before
+  parents). Intro segment = track trimmed to [0, loopStart], loop segment = [loopStart, loopEnd] (`play_at =
+  -begin_trim`, like the stock trimmed tracks), exit markers at each segment's end; playlist items loop once (1) or
+  forever (0). A custom death piece is its own playlist with the group and item looping once, like Carla's.
+- New object IDs are hashed names masked below 2^31: bnk2json reads some ID fields (`playlist_item_id`) as i32.
+- Audio: streamed, `source_flags` 0, at `sd/wem/<id>.wem`, IDs `1100000000 + 10 × slot (+1 for death)`: every stock
+  .wem ID is below 2^30, the game streams IDs up to 2^31, so this range can't clash with stock audio (lower ranges
+  can: stock `800028120.wem` exists).
+
+**Wwise IMA ADPCM** (`audio.adpcm_wem`), about 4× smaller than PCM: `fmt ` tag `0x0002`, 24-byte fmt chunk (block
+align 0x24 × channels, 4 bits per sample, cbSize 6, 64 samples per block, channel config), then per channel 0x24-byte
+blocks, channel-interleaved: s16 first sample, s8 step index, a reserved byte, 32 bytes of nibbles (low nibble first)
+= 64 samples, the last nibble unused (vgmstream's `decode_wwise_ima`). Bank source plugin `ADPCM`,
+`in_memory_media_size` = header size (44). Every stock .wem is Vorbis, but this Wwise version plays IMA ADPCM. Wwise's
+own Vorbis variant (stripped headers, codebooks referenced from a built-in table) would need a bit-level reencoder.
 
 ## Tools and their quirks
 

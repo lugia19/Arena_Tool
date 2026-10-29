@@ -12,6 +12,7 @@
     "rematchReward": 1
   },
   "ai": {"logic": "custom_logic.lua"},
+  "music": {"file": "music.mp3", "loopStart": 11.008, "loopEnd": 268.692},
   "images": {
     "emblem": "emblem.png",
     "thumbnail": "thumbnail.png",

@@ -110,7 +110,7 @@ A fight is a folder with a `fight.json` and the files it uses. Paths in `fight.j
 - **Arena settings**:
   - `arena.map`: the arena map.
   - `firstReward` / `rematchReward`: COAM rewards.
-  - `bgm`: background music.
+  - `bgm`: one of the game's songs, by number.
   - `startCutscene` / `endCutscene`: cutscenes.
 - **AI**:
   - `ai.logic`: a custom Lua logic script.
@@ -129,6 +129,12 @@ A fight is a folder with a `fight.json` and the files it uses. Paths in `fight.j
   - Each line has `text` and an optional `audio` file (wav, flac, ogg or mp3).
   - `dialogue.speaker` sets who the subtitles are attributed to: any name, like `"Arena Announcer"`, or the number of
     one of the game's speakers, like 200 for ALLMIND (the default) or 70 for Handler Walter.
+- **Music**: `music` gives the fight its own song (wav, flac, ogg or mp3):
+  - `music.file`: the song.
+  - `music.loopStart` / `music.loopEnd`: optional loop points, in seconds. The song plays from the start and, at
+    `loopEnd`, jumps back to `loopStart`. Without them the whole song loops.
+  - `music.death`: what happens when the player dies. Left out, the music stops, as with most stock songs; `null`
+    keeps it playing; a file plays that piece once instead.
 - **Decals**: `addEmblemToDecals` (default `true`) also lets players use the emblem as a decal.
 
 The full field reference, with defaults, is in [docs/fight_format.md](docs/fight_format.md).

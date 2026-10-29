@@ -15,6 +15,15 @@ class DialogueLine:
 
 
 @dataclass
+class Music:
+    file: str                          # Absolute path
+    loop_start: float = 0.0            # Seconds; the part before it plays once
+    loop_end: Optional[float] = None   # Seconds; None = the end of the song
+    death: Optional[str] = None        # Absolute path of a piece played once when the player dies
+    death_keeps_playing: bool = False  # "death": null. Without either, the music stops on death (like stock songs)
+
+
+@dataclass
 class Fight:
     folder: str
     name: str                    # name + author identify a fight in the library
@@ -26,7 +35,7 @@ class Fight:
     map_id: int = 9410
     first_reward: int = 1
     rematch_reward: int = 1
-    bgm: int = 50000
+    bgm: int = 50000                 # Stock music; ignored when music is set
     start_cutscene: int = 230000
     end_cutscene: int = -1
     logic_file: Optional[str] = None
@@ -42,6 +51,7 @@ class Fight:
     outro: List[DialogueLine] = field(default_factory=list)
     add_emblem_to_decals: bool = True
     tab: str = "CUSTOM ARENA"        # Fights with the same tab name share an arena tab
+    music: Optional[Music] = None
     tab_colors: List[str] = field(default_factory=list)  # "#rrggbb", several = a gradient; the first fight in a
                                                          # tab that sets any decides
 
@@ -67,6 +77,14 @@ def load_fight(folder: str) -> Fight:
     tab_colors = [tab_colors] if isinstance(tab_colors, str) else tab_colors
     if not all(isinstance(c, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", c) for c in tab_colors):
         raise ValueError(f"{folder}: tabColor must be a color like #ff9900, or a list of them")
+    music = None
+    if "music" in data:
+        settings = data["music"]
+        music = Music(path(settings["file"]), float(settings.get("loopStart", 0)),
+                      None if settings.get("loopEnd") is None else float(settings["loopEnd"]),
+                      path(settings.get("death")), "death" in settings and settings["death"] is None)
+        if music.loop_start < 0 or (music.loop_end is not None and music.loop_end <= music.loop_start):
+            raise ValueError(f"{folder}: music needs 0 <= loopStart < loopEnd")
     if not isinstance(dialogue.get("speaker", 200), (int, str)):
         raise ValueError(f"{folder}: dialogue.speaker must be a name or a speaker ID")
     if len(lines["intro"]) > 3 or len(lines["outro"]) > 2:
@@ -99,5 +117,6 @@ def load_fight(folder: str) -> Fight:
         outro=lines["outro"],
         add_emblem_to_decals=data.get("addEmblemToDecals", True),
         tab=data.get("tab", "CUSTOM ARENA"),
+        music=music,
         tab_colors=tab_colors,
     )

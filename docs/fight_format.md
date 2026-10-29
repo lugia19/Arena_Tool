@@ -17,6 +17,7 @@ replaces the old version, keeping its place in the list.
   "arena": {"description": "...", "map": 9411, "firstReward": 1, "rematchReward": 1,
             "bgm": 50000, "startCutscene": 230000, "endCutscene": -1},
   "ai": {"logic": "custom_logic.lua"},
+  "music": {"file": "music.mp3", "loopStart": 11.008, "loopEnd": 268.692, "death": "death.ogg"},
   "images": {"emblem": "emblem.png", "thumbnail": "thumbnail.png", "preview": "preview.png", "rankIcon": "rank_icon.png"},
   "rank": {"text": "05/S", "color": "#fff145"},
   "dialogue": {"speaker": "Arena Announcer",
@@ -37,10 +38,13 @@ replaces the old version, keeping its place in the list.
 | `arena.description` | yes | | The arena profile text. |
 | `arena.map` | | 9410 | MissionParam ID of the arena map. |
 | `arena.firstReward`, `arena.rematchReward` | | 1 | COAM for the first and later clears. |
-| `arena.bgm` | | 50000 | |
+| `arena.bgm` | | 50000 | Stock music by number (50000 = "Cinder" Carla's theme). Ignored when `music` is set. |
 | `arena.startCutscene`, `arena.endCutscene` | | 230000, -1 | 230000 is the generic intro; -1 = none. |
 | `ai.logic` | | | A Lua logic script (plain source works). It must define `LogicInitialSetup_<id>`; that ID is replaced. |
 | `ai.logicId` | | | Use an existing game AI instead. Without either, the fight uses "Cinder" Carla's AI. |
+| `music.file` | | | Custom music (wav, flac, ogg, mp3). Stored as Wwise ADPCM, about 3 MB per minute. |
+| `music.loopStart`, `music.loopEnd` | | 0, the end | Seconds. The song plays from the start; on reaching `loopEnd` it jumps back to `loopStart`, forever. |
+| `music.death` | | | When the player dies: left out, the music stops (like most stock songs); `null`, it keeps playing; a file, that plays once instead. |
 | `images.emblem` | | | Intro emblem, scaled to 1024x1024. Without it, Carla's emblem is used. |
 | `images.thumbnail` | | the emblem | HP-bar icon, scaled to 128x128. |
 | `images.preview` | | | Arena preview, scaled to 2048x893. |

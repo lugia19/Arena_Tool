@@ -27,6 +27,12 @@ class FightIds:
     rank_icon: int       # ArenaParam.rankIconID = frame of the rank icon sprite
     category: int        # ArenaParam.category = the fight's tab
     speaker: int         # AccountParam row (= TalkParam.talkerID) of a speaker named in fight.json; name at +3
+    # Custom music. bgm: ArenaParam.bgmId, a new point in init.bnk's BGM_ID table, whose stock points leave 60021-89999
+    # free (and 21xxx is special-cased by the game). Wems: every stock .wem ID is below 2^30 and the game streams IDs
+    # up to 2^31, so 1.1e9+ can't clash with stock audio.
+    bgm: int
+    music_wem: int
+    death_wem: int
 
     def intro_talk(self, line: int) -> int:
         return 600000000 + self.account * 1000 + 100 + line
@@ -46,4 +52,7 @@ def fight_ids(slot: int, position: int, category: int) -> FightIds:
         rank_icon=300 - position,  # Stock ranks use frames 0-31 and 101-113
         category=category,
         speaker=17000 + 10 * slot,
+        bgm=70000 + slot,
+        music_wem=1100000000 + 10 * slot,
+        death_wem=1100000000 + 10 * slot + 1,
     )

@@ -5,7 +5,7 @@ import tempfile
 from typing import List
 
 from .build.context import BuildContext
-from .build.steps import ranks, text, voice
+from .build.steps import music, ranks, text, voice
 
 # The params the build edits, plus MissionParam (the fights' maps)
 CHECKED_PARAMS = ["ArenaParam", "MissionParam", "AccountParam", "CharaInitParam", "NpcParam", "NpcThinkParam",
@@ -14,7 +14,8 @@ NAME_FIELDS = {"name", "paramdexName"}  # Row names: a mod's regulation often em
 EDITED_FILES = (ranks.GFX_FILES + voice.BANKS + [f"msg/{language}/{bnd}.msgbnd.dcx" for language in text.LANGUAGES
                                                  for bnd in ("menu", "item")]
                 + ["menu/hi/00_solo.tpfbdt", "menu/hi/01_common.tpf.dcx", "menu/hi/01_common.sblytbnd.dcx",
-                   "param/asmparam/asmparam.designbnd.dcx", "script/aicommon.luabnd.dcx"])
+                   "param/asmparam/asmparam.designbnd.dcx", "script/aicommon.luabnd.dcx", music.INIT_BANK,
+                   music.MUSIC_BANK])
 
 
 def _rows(param) -> dict:

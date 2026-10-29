@@ -28,6 +28,10 @@ WitchyBND configuration added by Arena Maker: `appsettings.override.json`, the P
 | Pillow | MIT-CMU |
 | soundfile | BSD-3-Clause (bundles libsndfile, LGPL-2.1) |
 
+## Example fight
+
+`examples/example_fight/music.mp3`: "The Cyber Grind" by meganeko, taken from ULTRAKILL's OST.
+
 ## Fonts
 
 `resources/Jura-SemiBold.ttf`: Jura by Daniel Johnson, SIL Open Font License 1.1
