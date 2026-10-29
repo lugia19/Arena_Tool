@@ -40,8 +40,8 @@ The list sets each tab's order: the first fight is the lowest rank. Change the o
 - **Build && launch** builds the mod and starts the game.
 - **Build** only builds it.
 
-Steam must be running. The game runs modded through [me3](https://github.com/garyttierney/me3), and Easy Anti-Cheat
-is off, so you play offline.
+The game runs modded through [me3](https://github.com/garyttierney/me3), and Easy Anti-Cheat is off, so you play
+offline.
 
 Modded play uses a separate save, `AC6CustomArena.sl2`, so your normal save never sees the custom fights:
 - The first time you launch, it starts as a copy of your normal save.
