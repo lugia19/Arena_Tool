@@ -6,10 +6,25 @@ LANGUAGES = ["deude", "engus", "frafr", "itait", "jpnjp", "korkr", "polpl", "por
              "thath", "zhocn", "zhotw"]
 
 
+def gradient(colors, t: float) -> str:
+    """The color at t (0-1) along evenly spaced color stops."""
+    position = t * (len(colors) - 1)
+    i = min(int(position), len(colors) - 2)
+    a, b = (bytes.fromhex(color[1:]) for color in colors[i:i + 2])
+    return "#" + bytes(round(x + (y - x) * (position - i)) for x, y in zip(a, b)).hex()
+
+
 def tab_text(tab: str, fights) -> str:
-    """The tab name, colored (with the game's <font> markup) by the first fight in the tab that sets a color."""
-    color = next((fight.tab_color for fight, _ in fights if fight.tab == tab and fight.tab_color), None)
-    return f'<font color="{color}">{tab}</font>' if color else tab
+    """The tab name, colored with the game's <font> markup by the first fight in the tab that sets colors; several
+    colors make a gradient across the letters (one <font> per letter, as the game's mods do)."""
+    colors = next((fight.tab_colors for fight, _ in fights if fight.tab == tab and fight.tab_colors), [])
+    if len(colors) < 2:
+        return f'<font color="{colors[0]}">{tab}</font>' if colors else tab
+    letters = [i for i, char in enumerate(tab) if not char.isspace()]  # Spaces don't take a color step
+    if len(letters) < 2:
+        return f'<font color="{colors[0]}">{tab}</font>'
+    shade = {i: gradient(colors, n / (len(letters) - 1)) for n, i in enumerate(letters)}
+    return "".join(f'<font color="{shade[i]}">{char}</font>' if i in shade else char for i, char in enumerate(tab))
 
 
 def apply(ctx, fights):

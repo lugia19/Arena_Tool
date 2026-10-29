@@ -12,7 +12,7 @@ replaces the old version, keeping its place in the list.
   "name": "Example One",
   "author": "lugia19",
   "tab": "CUSTOM ARENA",
-  "tabColor": "#4fc3f7",
+  "tabColor": ["#4fc3f7", "#b388ff"],
   "ac": {"design": "example.design", "name": "Example", "pilot": "One"},
   "arena": {"description": "...", "map": 9411, "firstReward": 1, "rematchReward": 1,
             "bgm": 50000, "startCutscene": 230000, "endCutscene": -1},
@@ -31,7 +31,7 @@ replaces the old version, keeping its place in the list.
 | `format` | yes | | Always 1 for now. |
 | `name`, `author` | yes | | Together they identify the fight. |
 | `tab` | | `"CUSTOM ARENA"` | Fights with the same tab name share an arena tab (up to 20 tabs). |
-| `tabColor` | | white | The tab name's color, as `#rrggbb`. The first fight in a tab that sets one decides it. |
+| `tabColor` | | white | The tab name's color, as `#rrggbb`, or a list of colors for a gradient across the letters (e.g. `["#ff9900", "#ffcc00", "#ff9900"]`). The first fight in a tab that sets one decides it. |
 | `ac.design` | yes | | A `.design` file (e.g. from AC6 Design Editor). |
 | `ac.name`, `ac.pilot` | yes | | Shown in the arena list and during the fight. |
 | `arena.description` | yes | | The arena profile text. |

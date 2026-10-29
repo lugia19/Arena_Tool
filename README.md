@@ -105,8 +105,8 @@ A fight is a folder with a `fight.json` and the files it uses. Paths in `fight.j
 ## Optional fields
 
 - **Tab**: `tab` names the arena tab the fight appears in. The default is `CUSTOM ARENA`. Fights with the same tab name
-  are grouped, with up to 20 custom tabs. `tabColor` (`#rrggbb`) colors the tab name; the first fight in a tab that
-  sets one decides it.
+  are grouped, with up to 20 custom tabs. `tabColor` (`#rrggbb`) colors the tab name, and a list of colors makes a
+  gradient across its letters. The first fight in a tab that sets one decides it.
 - **Arena settings**:
   - `arena.map`: the arena map.
   - `firstReward` / `rematchReward`: COAM rewards.

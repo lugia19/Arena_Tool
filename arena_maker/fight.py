@@ -42,7 +42,8 @@ class Fight:
     outro: List[DialogueLine] = field(default_factory=list)
     add_emblem_to_decals: bool = True
     tab: str = "CUSTOM ARENA"        # Fights with the same tab name share an arena tab
-    tab_color: Optional[str] = None  # "#rrggbb"; the first fight in a tab that sets one decides
+    tab_colors: List[str] = field(default_factory=list)  # "#rrggbb", several = a gradient; the first fight in a
+                                                         # tab that sets any decides
 
 
 def load_fight(folder: str) -> Fight:
@@ -62,8 +63,10 @@ def load_fight(folder: str) -> Fight:
     arena, ai, images, rank, dialogue = (data.get(key, {}) for key in ("arena", "ai", "images", "rank", "dialogue"))
     lines = {kind: [DialogueLine(line["text"], path(line.get("audio"))) for line in dialogue.get(kind, [])]
              for kind in ("intro", "outro")}
-    if data.get("tabColor") is not None and not re.fullmatch(r"#[0-9a-fA-F]{6}", data["tabColor"]):
-        raise ValueError(f"{folder}: tabColor must look like #ff9900")
+    tab_colors = data.get("tabColor", [])
+    tab_colors = [tab_colors] if isinstance(tab_colors, str) else tab_colors
+    if not all(isinstance(c, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", c) for c in tab_colors):
+        raise ValueError(f"{folder}: tabColor must be a color like #ff9900, or a list of them")
     if not isinstance(dialogue.get("speaker", 200), (int, str)):
         raise ValueError(f"{folder}: dialogue.speaker must be a name or a speaker ID")
     if len(lines["intro"]) > 3 or len(lines["outro"]) > 2:
@@ -96,5 +99,5 @@ def load_fight(folder: str) -> Fight:
         outro=lines["outro"],
         add_emblem_to_decals=data.get("addEmblemToDecals", True),
         tab=data.get("tab", "CUSTOM ARENA"),
-        tab_color=data.get("tabColor"),
+        tab_colors=tab_colors,
     )
