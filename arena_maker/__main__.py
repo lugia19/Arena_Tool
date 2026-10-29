@@ -1,5 +1,6 @@
 """Command line for the fight library and the build. Run `python -m arena_maker -h` for the commands."""
 import argparse
+import functools
 import os
 import time
 
@@ -7,8 +8,6 @@ from . import library, tools
 from .build import PROFILE_NAME, build
 from .package import launch
 from .steam import find_game_dir
-
-DEFAULT_DATA = os.path.join(os.environ["APPDATA"], "lugia19", "ac6_arena_maker")
 
 
 def print_list(lib):
@@ -21,7 +20,7 @@ def print_list(lib):
 
 def main():
     parser = argparse.ArgumentParser(prog="arena_maker")
-    parser.add_argument("--data", default=DEFAULT_DATA, help="Library and build folder")
+    parser.add_argument("--data", default=library.DEFAULT_DATA_DIR, help="Library and build folder")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("list", help="Show the fights in arena order")
     add = commands.add_parser("add", help="Add or update fights from folders or zips")
@@ -56,11 +55,12 @@ def main():
         if args.command == "build":
             if not lib.entries:
                 raise SystemExit("The library is empty; add fights first")
-            game_dir = args.game or find_game_dir()
+            game_dir = args.game or find_game_dir() or lib.game_dir
             if not game_dir:
                 raise SystemExit("Couldn't find ARMORED CORE VI through Steam; pass --game")
             started = time.time()
-            build(library.library_fights(lib), game_dir, args.data, hide_vanilla_arena=lib.hide_vanilla)
+            build(library.library_fights(lib), game_dir, args.data, hide_vanilla_arena=lib.hide_vanilla,
+                  log=functools.partial(print, flush=True))  # Flushed, so progress shows when piped too
             print(f"Built in {time.time() - started:.0f}s")
         if args.command == "launch" or args.launch:
             launch(tools.ME3, os.path.join(args.data, PROFILE_NAME))

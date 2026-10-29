@@ -1,4 +1,5 @@
 cryptography
 numpy
 Pillow
+PyQt6
 soundfile

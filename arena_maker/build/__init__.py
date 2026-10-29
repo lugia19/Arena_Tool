@@ -1,7 +1,7 @@
 """Builds an ME3 package + profile from a list of fights."""
 import os
 import shutil
-from typing import Iterable, List, Tuple
+from typing import Callable, Iterable, List, Tuple
 
 from ..fight import Fight
 from ..ids import TAB_CATEGORIES, fight_ids
@@ -16,7 +16,7 @@ STEPS = [regulation, text, designs, ai, images, ranks, voice]
 
 
 def build(fights: List[Tuple[Fight, int]], game_dir: str, out_dir: str, sources: Iterable[str] = (),
-          hide_vanilla_arena: bool = False) -> str:
+          hide_vanilla_arena: bool = False, log: Callable[[str], None] = print) -> str:
     """fights: (fight, slot) in arena list order, weakest first (like the stock tabs). Returns the profile path."""
     work_dir = os.path.join(out_dir, "work")
     shutil.rmtree(work_dir, ignore_errors=True)
@@ -27,9 +27,9 @@ def build(fights: List[Tuple[Fight, int]], game_dir: str, out_dir: str, sources:
     with_ids = [(fight, fight_ids(slot, position, TAB_CATEGORIES[tabs.index(fight.tab)]))
                 for position, (fight, slot) in enumerate(fights)]
     for step in STEPS:
-        print(f"Building: {step.__name__.rsplit('.', 1)[-1]}")
+        log(f"Building: {step.__name__.rsplit('.', 1)[-1]}")
         step.apply(ctx, with_ids)
-    print("Repacking")
+    log("Repacking")
     with PackageBuilder(out_dir, PACKAGE_NAME) as package:
         ctx.finish(package)
     profile = os.path.join(out_dir, PROFILE_NAME)
