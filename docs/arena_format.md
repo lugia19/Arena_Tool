@@ -58,7 +58,7 @@ make sense. **Verified** against the unpacked 1.09.1 regulation.
 | Field | Old name | Carla | Notes |
 |---|---|---|---|
 | `nameTextID` | `fmgId` | 310 | TitleCharacters (`NPC名`) entries `n, n+1, n+2, n+3` = AC name, pilot name, AC name, pilot name. **Verified**: 310-313 = "FULL COURSE", "\"Cinder\" Carla", "FULL COURSE", "\"Cinder\" Carla". |
-| `emblemImageID` | `menuDecalId` | 12 | Picks `MENU_Decal_<id:08>` (intro emblem) and `Decal_tmb_<id:08>` (HP bar thumbnail). Must be below 10000 (see Emblem IDs). |
+| `emblemImageID` | `menuDecalId` | 12 | Picks `MENU_Decal_<id:08>` (intro emblem) and `Decal_tmb_<id:08>` (HP bar thumbnail). Below 10000 if it should also be a player decal (see Emblem IDs). |
 
 The account ID also drives the talk IDs (below). Arena Maker gives each fight account `16000 + 10 * index` and uses
 the same number for `nameTextID` and `emblemImageID`.
@@ -187,9 +187,11 @@ selectable decal images. **Verified in game**:
 - IDs below 10000 are game images (`Decal_tmb_<id>`). IDs from 10000 up are the player's own saved decals: 10000
   showed a decal the player had made, 16001 and 65535 showed blank slots, even with a `Decal_tmb_` thumbnail present.
 
-So custom emblem IDs must be below 10000 and avoid the stock ones (151 IDs: mostly 1-3046, plus 9998 and 9999);
-4000-9997 is free. `PresetEmblemSpec.PieceID` is 16-bit, so list entries can't go above 65535 anyway. Arena Maker used
-the account ID (16000 + 10 per fight) as the emblem ID, which falls in the player-decal range.
+The arena itself (intro emblem, HP bar thumbnail) looks emblems up by name whatever the ID: Arena Maker used the
+account ID (16000 + 10 per fight) as the emblem ID and those showed fine (from the original tool). The 10000 limit
+only matters for the player's decal list. Custom emblems that should be selectable by the player need IDs below 10000
+that avoid the stock ones (151 IDs: mostly 1-3046, plus 9998 and 9999); 4000-9997 is free. `PresetEmblemSpec.PieceID`
+is 16-bit, so list entries can't go above 65535 anyway.
 
 ### Rank icons
 
