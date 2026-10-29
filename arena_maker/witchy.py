@@ -128,8 +128,10 @@ class Witchy:
         self._run_batch(batch, flags)
 
     def _run_batch(self, paths: List[str], flags: List[str]):
+        # WitchyBND's console library refuses to run without a console, which a pythonw app doesn't have: give it a
+        # hidden one
         result = subprocess.run([self.exe_path, "--silent", *flags, *paths], capture_output=True, text=True,
-                                encoding="utf-8", errors="replace")
+                                encoding="utf-8", errors="replace", creationflags=subprocess.CREATE_NO_WINDOW)
         if result.returncode != 0:
             output = (result.stdout + result.stderr).strip()
             listed = "\n  ".join(paths[:5]) + ("\n  ..." if len(paths) > 5 else "")

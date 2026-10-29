@@ -38,7 +38,8 @@ class Bnk2Json:
     def _run(self, path: str):
         with tempfile.TemporaryDirectory() as clean_dir:
             result = subprocess.run([self.exe_path, os.path.abspath(path)], cwd=clean_dir, capture_output=True,
-                                    text=True, encoding="utf-8", errors="replace")
+                                    text=True, encoding="utf-8", errors="replace",
+                                    creationflags=subprocess.CREATE_NO_WINDOW)
         if result.returncode != 0:
             output = (result.stdout + result.stderr).strip()
             raise Bnk2JsonError(f"bnk2json failed (exit {result.returncode}) on {path}" + (f"\n{output}" if output else ""))

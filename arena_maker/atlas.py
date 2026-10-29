@@ -153,7 +153,8 @@ class Texconv:
 
     def _convert(self, source: str, output_dir: str, args: List[str]):
         result = subprocess.run([self.exe_path, "-nologo", "-y", "-o", output_dir, *args, source],
-                                capture_output=True, text=True, errors="replace")
+                                capture_output=True, text=True, errors="replace",
+                                creationflags=subprocess.CREATE_NO_WINDOW)
         if result.returncode != 0:
             raise RuntimeError(f"texconv failed on {source}:\n{(result.stdout + result.stderr).strip()}")
 

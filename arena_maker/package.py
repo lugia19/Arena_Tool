@@ -101,6 +101,6 @@ def write_profile(profile_path: str, packages: Iterable[Tuple[str, str]], native
 
 
 def launch(me3_exe: str, profile_path: str) -> subprocess.Popen:
-    """Starts the game through ME3 with the given profile (EAC-free; Steam must be running)."""
+    """Starts the game through ME3 with the given profile (EAC-free)."""
     return subprocess.Popen([me3_exe, "launch", "-p", os.path.abspath(profile_path)],
                             cwd=os.path.dirname(os.path.abspath(me3_exe)))
