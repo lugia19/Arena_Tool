@@ -284,10 +284,13 @@ ArenaParam.bgmId (e.g. 21000)
   798507079). 50000, the default arena music, is "Cinder" Carla's "Rough and Decent" (wem 209111615).
 - **Death**: most numbers route `death` to a silent 4.9 s segment (933200949 or 1070742183), so the music stops; a few
   (e.g. 50000) have a real piece played once.
-- **21xxx is special-cased by the game**: new numbers 21004, 21005 and 21012 played mission music (wem 374197011 from
-  the mission switch 375664304, which switches on map areas and mission states) even with chart entries and a
-  rerouted catch-all. An exe function maps 21000-21011 to small values, but 21012 behaves the same, so the cause is
-  still open. Custom numbers stay out of this range.
+- **21xxx is special-cased by the game**: new numbers 21004, 21005 and 21012 played the arena map's own music (wem
+  374197011) even with chart entries and a rerouted catch-all, while 77700 did use the arena switch. That music comes
+  from the map music switch 375664304, driven by the game parameters `Map_ID`, `Map_GridX/Y/Z`,
+  `Env_Region_1st/2nd`, `Env_Wind_1st/2nd` and `OutdoorIndoor` (names from the exe's sound parameter table, matched
+  by hash). What sends 21xxx numbers there is unknown (not in the regulation or the banks; an exe function mapping
+  21000-21011 turned out to be a UI text tag lookup, unrelated). Both switches' first level is a state group whose
+  value "On" leads to silence. Custom numbers stay out of this range.
 
 **Custom music** (`build/steps/music.py`, `soundbank.MusicAdder`), per fight with a slot:
 
